@@ -1,0 +1,22 @@
+# === Binários grandes (acima do limite do GitHub; baixar da fonte oficial) ===
+# Pacote da Calculadora oficial: https://piloto-cbs.tributos.gov.br/ > Calculadora Offline
+calculadora.zip
+calculadora-oficial/calculadora.tar.gz
+calculadora-oficial/output/
+
+# === LGPD: saídas de simulação podem conter dados de clientes reais ===
+saidas/
+
+# === Perfis de clientes reais (manter fora do repositório) ===
+# Os exemplos fictícios (servicos_ti_teste, comercio_teste, itens_validacao_teste)
+# são versionados; qualquer perfil de cliente real deve seguir o padrão abaixo:
+exemplos/cliente_*.json
+clientes/
+
+# Python / macOS
+__pycache__/
+*.pyc
+.DS_Store
+
+# Zips do pacote oficial (recuperáveis do download; não versionar)
+calculadora-oficial/*.zip

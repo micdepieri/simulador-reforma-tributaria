@@ -1,0 +1,1 @@
+wsl -d calculadora --cd /calculadora --exec bash start.sh

@@ -1,0 +1,189 @@
+{
+  "versao": "2026.08.5",
+  "data_vigencia": "2026-08-22",
+  "fontes": [
+    "EC 132/2023",
+    "LC 214/2025",
+    "LC 123/2006 (Anexos I-V, tabelas vigentes)",
+    "Estimativas de aliquota de referencia - Ministerio da Fazenda (pendente de fixacao pelo Senado)"
+  ],
+  "avisos": [
+    "Aliquota de referencia IBS+CBS ainda nao fixada em resolucao do Senado - cenarios sao estimativas.",
+    "Percentuais de reparticao do DAS sao os da faixa efetiva; conferir contra LC 123 antes de uso em cliente real."
+  ],
+
+  "cenarios_aliquota": {
+    "base":        { "total": 0.270, "cbs": 0.085,  "ibs": 0.185,  "fonte": "Referencia oficial embarcada na Calculadora de Tributos RFB, banco V0042 (2026-07-07): CBS 8,5% + IBS UF 16,0% + IBS municipal 2,5%" },
+    "otimista":    { "total": 0.265, "cbs": 0.0834, "ibs": 0.1816 },
+    "conservador": { "total": 0.275, "cbs": 0.0866, "ibs": 0.1884 },
+    "pessimista":  { "total": 0.285, "cbs": 0.0897, "ibs": 0.1953 }
+  },
+
+  "cronograma_transicao": {
+    "2026": { "cbs_frac_ref": null, "cbs_teste": 0.009, "ibs_frac_ref": null, "ibs_teste": 0.001,
+              "teste_compensavel_pis_cofins": true,
+              "pis_cofins_vigente": 1.0, "icms_iss_vigente": 1.0, "ipi_vigente": 1.0,
+              "nota": "Ano-teste: 0,9% CBS + 0,1% IBS compensaveis com PIS/COFINS; dispensa de recolhimento para quem cumprir as obrigacoes acessorias." },
+    "2027": { "cbs_frac_ref": 1.0, "cbs_reducao_pp": 0.001, "ibs_frac_ref": null, "ibs_teste": 0.001,
+              "pis_cofins_vigente": 0.0, "icms_iss_vigente": 1.0, "ipi_vigente": 0.0,
+              "nota": "CBS plena (reduzida em 0,1 p.p. enquanto IBS-teste vigente); PIS/COFINS extintos; IPI zerado exceto ZFM; Imposto Seletivo em vigor." },
+    "2028": { "cbs_frac_ref": 1.0, "cbs_reducao_pp": 0.001, "ibs_frac_ref": null, "ibs_teste": 0.001,
+              "pis_cofins_vigente": 0.0, "icms_iss_vigente": 1.0, "ipi_vigente": 0.0,
+              "nota": "Igual a 2027." },
+    "2029": { "cbs_frac_ref": 1.0, "cbs_reducao_pp": 0.0, "ibs_frac_ref": 0.10,
+              "pis_cofins_vigente": 0.0, "icms_iss_vigente": 0.9, "ipi_vigente": 0.0,
+              "nota": "ICMS/ISS a 90% das aliquotas; IBS a 10% da referencia." },
+    "2030": { "cbs_frac_ref": 1.0, "cbs_reducao_pp": 0.0, "ibs_frac_ref": 0.20,
+              "pis_cofins_vigente": 0.0, "icms_iss_vigente": 0.8, "ipi_vigente": 0.0,
+              "nota": "ICMS/ISS a 80%; IBS a 20%." },
+    "2031": { "cbs_frac_ref": 1.0, "cbs_reducao_pp": 0.0, "ibs_frac_ref": 0.30,
+              "pis_cofins_vigente": 0.0, "icms_iss_vigente": 0.7, "ipi_vigente": 0.0,
+              "nota": "ICMS/ISS a 70%; IBS a 30%." },
+    "2032": { "cbs_frac_ref": 1.0, "cbs_reducao_pp": 0.0, "ibs_frac_ref": 0.40,
+              "pis_cofins_vigente": 0.0, "icms_iss_vigente": 0.6, "ipi_vigente": 0.0,
+              "nota": "ICMS/ISS a 60%; IBS a 40%." },
+    "2033": { "cbs_frac_ref": 1.0, "cbs_reducao_pp": 0.0, "ibs_frac_ref": 1.0,
+              "pis_cofins_vigente": 0.0, "icms_iss_vigente": 0.0, "ipi_vigente": 0.0,
+              "nota": "Regime pleno: ICMS e ISS extintos." }
+  },
+
+  "redutores_lc214": {
+    "padrao": { "reducao": 0.0, "descricao": "Regra geral - sem reducao" },
+    "profissoes_regulamentadas": { "reducao": 0.30, "descricao": "Servicos de profissao intelectual regulamentada (art. 127 LC 214)" },
+    "reducao_60": { "reducao": 0.60, "descricao": "Saude, educacao, dispositivos medicos, insumos agropecuarios, alimentos destinados ao consumo humano listados, entre outros (arts. 128-145 LC 214)" },
+    "cesta_basica": { "reducao": 1.00, "descricao": "Cesta Basica Nacional de Alimentos - aliquota zero (Anexo I LC 214)" }
+  },
+
+  "regimes_especificos_lc214": [
+    "combustiveis_monofasia", "servicos_financeiros", "planos_saude",
+    "operacoes_imobiliarias", "hotelaria_bares_restaurantes", "transporte_coletivo",
+    "zona_franca_manaus", "sociedades_cooperativas", "apostas_concursos"
+  ],
+
+  "regimes_especificos_detalhe": {
+    "hotelaria_bares_restaurantes": { "reducao": 0.40, "nota": "Reducao de 40% - hotelaria, parques, bares e restaurantes (LC 214, regime diferenciado) - CONFERIR redacao final." },
+    "transporte_coletivo": { "reducao": 0.40, "nota": "Reducao de 40% - transporte coletivo de passageiros rodoviario/ferroviario/hidroviario intermunicipal e interestadual - CONFERIR." },
+    "operacoes_imobiliarias_locacao": { "reducao": 0.70, "nota": "Reducao de 70% na locacao/cessao de bens imoveis (LC 214) - alem do redutor social; CONFERIR." },
+    "operacoes_imobiliarias_alienacao": { "reducao": 0.50, "nota": "Reducao de 50% na alienacao de bens imoveis (LC 214) - alem dos redutores social e de ajuste; CONFERIR." }
+  },
+  "nota_regimes_especificos": "Regimes com aliquota/base propria (combustiveis monofasia, servicos financeiros, planos de saude, ZFM, apostas) NAO tem calculo automatizado - o simulador sinaliza e trata como aproximacao pela regra geral.",
+
+  "imposto_seletivo_setores": [
+    "bebidas_alcoolicas", "bebidas_acucaradas", "fumo", "veiculos",
+    "embarcacoes_aeronaves", "extracao_mineral_petroleo", "apostas"
+  ],
+
+  "simples_nacional": {
+    "limite_anual": 4800000.0,
+    "sublimite_icms_iss": 3600000.0,
+    "fator_r_corte": 0.28,
+    "anexos": {
+      "I": { "descricao": "Comercio", "faixas": [
+        { "ate": 180000.0,  "aliquota": 0.040,  "deduzir": 0.0 },
+        { "ate": 360000.0,  "aliquota": 0.073,  "deduzir": 5940.0 },
+        { "ate": 720000.0,  "aliquota": 0.095,  "deduzir": 13860.0 },
+        { "ate": 1800000.0, "aliquota": 0.107,  "deduzir": 22500.0 },
+        { "ate": 3600000.0, "aliquota": 0.143,  "deduzir": 87300.0 },
+        { "ate": 4800000.0, "aliquota": 0.190,  "deduzir": 378000.0 } ],
+        "reparticao_consumo": { "pis_cofins": 0.1550, "icms_iss": 0.3400 },
+        "reparticao_faixas": [
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1274, "pis": 0.0276, "cpp": 0.4150, "icms_iss": 0.3400 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1274, "pis": 0.0276, "cpp": 0.4150, "icms_iss": 0.3400 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1274, "pis": 0.0276, "cpp": 0.4200, "icms_iss": 0.3350 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1274, "pis": 0.0276, "cpp": 0.4200, "icms_iss": 0.3350 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1274, "pis": 0.0276, "cpp": 0.4200, "icms_iss": 0.3350 },
+          { "irpj": 0.1350, "csll": 0.1000, "cofins": 0.2827, "pis": 0.0613, "cpp": 0.4210, "icms_iss": 0.0 } ] },
+      "II": { "descricao": "Industria", "faixas": [
+        { "ate": 180000.0,  "aliquota": 0.045,  "deduzir": 0.0 },
+        { "ate": 360000.0,  "aliquota": 0.078,  "deduzir": 5940.0 },
+        { "ate": 720000.0,  "aliquota": 0.100,  "deduzir": 13860.0 },
+        { "ate": 1800000.0, "aliquota": 0.112,  "deduzir": 22500.0 },
+        { "ate": 3600000.0, "aliquota": 0.147,  "deduzir": 85500.0 },
+        { "ate": 4800000.0, "aliquota": 0.300,  "deduzir": 720000.0 } ],
+        "reparticao_consumo": { "pis_cofins": 0.1451, "icms_iss": 0.3200, "ipi": 0.0750 },
+        "reparticao_faixas": [
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1151, "pis": 0.0249, "cpp": 0.3750, "ipi": 0.0750, "icms_iss": 0.3200 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1151, "pis": 0.0249, "cpp": 0.3750, "ipi": 0.0750, "icms_iss": 0.3200 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1151, "pis": 0.0249, "cpp": 0.3750, "ipi": 0.0750, "icms_iss": 0.3200 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1151, "pis": 0.0249, "cpp": 0.3750, "ipi": 0.0750, "icms_iss": 0.3200 },
+          { "irpj": 0.0550, "csll": 0.0350, "cofins": 0.1151, "pis": 0.0249, "cpp": 0.3750, "ipi": 0.0750, "icms_iss": 0.3200 },
+          { "irpj": 0.0850, "csll": 0.0750, "cofins": 0.2096, "pis": 0.0454, "cpp": 0.2350, "ipi": 0.3500, "icms_iss": 0.0 } ] },
+      "III": { "descricao": "Servicos (fator R >= 28%)", "faixas": [
+        { "ate": 180000.0,  "aliquota": 0.060,  "deduzir": 0.0 },
+        { "ate": 360000.0,  "aliquota": 0.112,  "deduzir": 9360.0 },
+        { "ate": 720000.0,  "aliquota": 0.135,  "deduzir": 17640.0 },
+        { "ate": 1800000.0, "aliquota": 0.160,  "deduzir": 35640.0 },
+        { "ate": 3600000.0, "aliquota": 0.210,  "deduzir": 125640.0 },
+        { "ate": 4800000.0, "aliquota": 0.330,  "deduzir": 648000.0 } ],
+        "reparticao_consumo": { "pis_cofins": 0.1560, "icms_iss": 0.3350 },
+        "reparticao_faixas": [
+          { "irpj": 0.0400, "csll": 0.0350, "cofins": 0.1282, "pis": 0.0278, "cpp": 0.4340, "icms_iss": 0.3350 },
+          { "irpj": 0.0400, "csll": 0.0350, "cofins": 0.1405, "pis": 0.0305, "cpp": 0.4340, "icms_iss": 0.3200 },
+          { "irpj": 0.0400, "csll": 0.0350, "cofins": 0.1364, "pis": 0.0296, "cpp": 0.4340, "icms_iss": 0.3250 },
+          { "irpj": 0.0400, "csll": 0.0350, "cofins": 0.1364, "pis": 0.0296, "cpp": 0.4340, "icms_iss": 0.3250 },
+          { "irpj": 0.0400, "csll": 0.0350, "cofins": 0.1282, "pis": 0.0278, "cpp": 0.4340, "icms_iss": 0.3350 },
+          { "irpj": 0.3500, "csll": 0.1500, "cofins": 0.1603, "pis": 0.0347, "cpp": 0.3050, "icms_iss": 0.0 } ] },
+      "IV": { "descricao": "Servicos (construcao, limpeza, vigilancia - CPP por fora)", "faixas": [
+        { "ate": 180000.0,  "aliquota": 0.045,  "deduzir": 0.0 },
+        { "ate": 360000.0,  "aliquota": 0.090,  "deduzir": 8100.0 },
+        { "ate": 720000.0,  "aliquota": 0.102,  "deduzir": 12420.0 },
+        { "ate": 1800000.0, "aliquota": 0.140,  "deduzir": 39780.0 },
+        { "ate": 3600000.0, "aliquota": 0.220,  "deduzir": 183780.0 },
+        { "ate": 4800000.0, "aliquota": 0.330,  "deduzir": 828000.0 } ],
+        "reparticao_consumo": { "pis_cofins": 0.1782, "icms_iss": 0.4400 },
+        "reparticao_faixas": [
+          { "irpj": 0.1880, "csll": 0.1520, "cofins": 0.1767, "pis": 0.0383, "icms_iss": 0.4450 },
+          { "irpj": 0.1980, "csll": 0.1520, "cofins": 0.2055, "pis": 0.0445, "icms_iss": 0.4000 },
+          { "irpj": 0.2080, "csll": 0.1520, "cofins": 0.1973, "pis": 0.0427, "icms_iss": 0.4000 },
+          { "irpj": 0.1780, "csll": 0.1920, "cofins": 0.1890, "pis": 0.0410, "icms_iss": 0.4000 },
+          { "irpj": 0.1880, "csll": 0.1920, "cofins": 0.1808, "pis": 0.0392, "icms_iss": 0.4000 },
+          { "irpj": 0.5350, "csll": 0.2150, "cofins": 0.2055, "pis": 0.0445, "icms_iss": 0.0 } ] },
+      "V": { "descricao": "Servicos (fator R < 28%)", "faixas": [
+        { "ate": 180000.0,  "aliquota": 0.155,  "deduzir": 0.0 },
+        { "ate": 360000.0,  "aliquota": 0.180,  "deduzir": 4500.0 },
+        { "ate": 720000.0,  "aliquota": 0.195,  "deduzir": 9900.0 },
+        { "ate": 1800000.0, "aliquota": 0.205,  "deduzir": 17100.0 },
+        { "ate": 3600000.0, "aliquota": 0.230,  "deduzir": 62100.0 },
+        { "ate": 4800000.0, "aliquota": 0.305,  "deduzir": 540000.0 } ],
+        "reparticao_consumo": { "pis_cofins": 0.1782, "icms_iss": 0.1400 },
+        "reparticao_faixas": [
+          { "irpj": 0.2500, "csll": 0.1500, "cofins": 0.1410, "pis": 0.0305, "cpp": 0.2885, "icms_iss": 0.1400 },
+          { "irpj": 0.2300, "csll": 0.1500, "cofins": 0.1410, "pis": 0.0305, "cpp": 0.2785, "icms_iss": 0.1700 },
+          { "irpj": 0.2400, "csll": 0.1500, "cofins": 0.1492, "pis": 0.0323, "cpp": 0.2385, "icms_iss": 0.1900 },
+          { "irpj": 0.2100, "csll": 0.1500, "cofins": 0.1574, "pis": 0.0341, "cpp": 0.2385, "icms_iss": 0.2100 },
+          { "irpj": 0.2300, "csll": 0.1250, "cofins": 0.1410, "pis": 0.0305, "cpp": 0.2385, "icms_iss": 0.2350 },
+          { "irpj": 0.3500, "csll": 0.1550, "cofins": 0.1644, "pis": 0.0356, "cpp": 0.2950, "icms_iss": 0.0 } ] }
+    },
+    "nota_reparticao": "reparticao_faixas = percentuais de reparticao do DAS por faixa conforme LC 123 Anexos I-V (CONFERIR contra o texto legal antes de uso em cliente real). Na 6a faixa o ICMS/ISS e recolhido por fora do DAS. reparticao_consumo mantido como fallback (media 3a faixa)."
+  },
+
+  "calculadora_oficial": {
+    "habilitada": true,
+    "versao_instalada": "V0042 - 1.3.0",
+    "base_url": "http://localhost:8080",
+    "endpoint_swagger": "/api/api-docs",
+    "endpoint_status": "/api/versao/status",
+    "endpoint_calculo": "/api/calculadora/regime-geral",
+    "endpoint_dados_abertos": "/api/calculadora/dados-abertos",
+    "tolerancia_divergencia_pp": 0.005,
+    "nota": "Modulo offline da Calculadora de Tributos da Receita Federal (piloto-cbs.tributos.gov.br). Nao ha API publica online - baixar o pacote offline, executar localmente e rodar 'python3 motor/validacao_oficial.py --descobrir' para mapear o endpoint de calculo via Swagger embutido. Tratamento do Simples Nacional ainda em desenvolvimento na Calculadora (FAQ v1.4) - validacao oficial cobre o regime regular (Presumido/Real/Simples hibrido)."
+  },
+
+  "financeiro": {
+    "taxa_capital_giro_aa": 0.15,
+    "prazo_recolhimento_atual_dias": 25,
+    "nota": "taxa_capital_giro_aa = custo anual do dinheiro usado no calculo do impacto do split payment; prazo_recolhimento_atual_dias = float medio entre o recebimento da venda e o recolhimento do tributo no regime atual."
+  },
+
+  "lucro_presumido": {
+    "presuncao_irpj": { "comercio": 0.08, "industria": 0.08, "servicos": 0.32, "transporte_carga": 0.08, "servicos_hospitalares": 0.08 },
+    "presuncao_csll": { "comercio": 0.12, "industria": 0.12, "servicos": 0.32, "transporte_carga": 0.12, "servicos_hospitalares": 0.12 },
+    "irpj": 0.15, "irpj_adicional": 0.10, "irpj_adicional_limite_anual": 240000.0,
+    "csll": 0.09, "pis": 0.0065, "cofins": 0.03
+  },
+
+  "lucro_real": {
+    "irpj": 0.15, "irpj_adicional": 0.10, "irpj_adicional_limite_anual": 240000.0,
+    "csll": 0.09, "pis": 0.0165, "cofins": 0.076
+  }
+}

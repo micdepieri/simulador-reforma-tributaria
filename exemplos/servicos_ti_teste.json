@@ -1,0 +1,21 @@
+{
+  "nome": "TI Teste Servicos Ltda",
+  "atividade": "servicos",
+  "cnae_principal": "6201-5/01",
+  "uf": "SC",
+  "municipio": "Florianopolis",
+  "regime_atual": "simples",
+  "anexo_simples": "III",
+  "receita_bruta_anual": 3000000.0,
+  "rbt12": 3000000.0,
+  "folha_anual": 950000.0,
+  "cmv_anual": 0.0,
+  "despesas_operacionais_anual": 700000.0,
+  "compras_creditaveis_anual": 350000.0,
+  "mix_b2b": 0.85,
+  "categoria_redutor": "padrao",
+  "aliquota_efetiva_icms": 0.0,
+  "aliquota_efetiva_iss": 0.03,
+  "aliquota_efetiva_ipi": 0.0,
+  "observacoes": "Empresa ficticia de validacao - desenvolvimento de software B2B, folha alta (fator R > 28%)."
+}

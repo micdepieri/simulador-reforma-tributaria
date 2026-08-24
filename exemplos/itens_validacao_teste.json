@@ -1,0 +1,6 @@
+[
+  {"descricao": "Item regra geral (CST 000)", "ncm": "85171300", "base_calculo": 10000.0,
+   "uf": "PR", "municipio_ibge": "4106902", "data": "2033-01-15", "cst": "000", "cclasstrib": "000001"},
+  {"descricao": "Item reducao 60% (CST 200)", "ncm": "30049099", "base_calculo": 10000.0,
+   "uf": "PR", "municipio_ibge": "4106902", "data": "2033-01-15", "cst": "200", "cclasstrib": "200032"}
+]

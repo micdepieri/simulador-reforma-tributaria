@@ -1,0 +1,22 @@
+{
+  "nome": "Comercio Teste Ltda",
+  "atividade": "comercio",
+  "cnae_principal": "4711-3/02",
+  "uf": "SC",
+  "municipio": "Sao Jose",
+  "regime_atual": "presumido",
+  "receita_bruta_anual": 8000000.0,
+  "folha_anual": 800000.0,
+  "cmv_anual": 5200000.0,
+  "despesas_operacionais_anual": 900000.0,
+  "compras_creditaveis_anual": 5600000.0,
+  "mix_b2b": 0.30,
+  "categoria_redutor": "padrao",
+  "aliquota_efetiva_icms": 0.045,
+  "aliquota_efetiva_iss": 0.0,
+  "aliquota_efetiva_ipi": 0.0,
+  "saldo_credor_pis_cofins": 120000.0,
+  "saldo_credor_icms": 300000.0,
+  "prazo_recolhimento_atual_dias": 25,
+  "observacoes": "Empresa ficticia de validacao - varejo/atacado com ICMS efetivo de 4,5% (beneficio fiscal estadual capturado no efetivo pago)."
+}
