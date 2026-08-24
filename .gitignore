@@ -13,6 +13,12 @@ saidas/
 exemplos/cliente_*.json
 clientes/
 
+# === Empresas reais (documentos e perfis fiscais - LGPD) ===
+# Apenas o modelo de pastas e o README ficam versionados.
+empresas/*
+!empresas/README.md
+!empresas/_modelo/
+
 # Python / macOS
 __pycache__/
 *.pyc

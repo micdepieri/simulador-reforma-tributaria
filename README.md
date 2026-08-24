@@ -8,8 +8,13 @@ Proposta completa e escopo: [PROPOSTA.md](PROPOSTA.md)
 
 ## Como usar
 
-No Claude Code, invoque a skill **/simulador-reforma** (ela monta o perfil fiscal
-a partir dos documentos e roda o motor). Ou manualmente:
+Para uma empresa nova, no Claude Code digite **/iniciar** — ele entrevista você
+(nome da empresa, documentos), cria a pasta em `empresas/`, classifica os
+documentos e roda a análise completa, avisando sobre inconsistências ou dados
+faltantes ao longo do processo.
+
+Se já tiver o perfil fiscal montado, invoque a skill **/simulador-reforma**
+diretamente (ela roda o motor a partir do perfil). Ou manualmente:
 
 ```bash
 python3 motor/simulador.py exemplos/servicos_ti_teste.json base
@@ -28,7 +33,10 @@ motor/regime_atual.py               ← Agente 2: Simples / Presumido / Real vig
 motor/ibs_cbs.py                    ← Agente 3: IBS/CBS + cronograma de transição
 motor/simulador.py                  ← CLI: matriz comparativa + resumo
 exemplos/                           ← perfis fiscais (2 empresas fictícias de validação)
-.claude/skills/simulador-reforma/   ← skill orquestradora
+empresas/                           ← empresas reais em análise (fora do git, ver empresas/README.md)
+.claude/skills/iniciar/              ← comando /iniciar — entrevista + orquestra todo o processo
+.claude/skills/simulador-reforma/   ← skill orquestradora da simulação
+.claude/agents/ingestao-documentos.md   ← classifica documentos e monta o perfil fiscal
 .claude/agents/atualizacao-normativa.md ← agente que atualiza parâmetros por norma nova
 ```
 
@@ -50,7 +58,9 @@ reproduzíveis e auditáveis.
 - **Fase 1 — concluída:** parâmetros versionados, motores de cálculo, perfil fiscal,
   validação com 2 empresas fictícias.
 - **Fase 2 — concluída:** ingestão de XMLs de NF-e (`motor/ingestao_xml.py`) + agente
-  `ingestao-documentos` (DRE/BP/folha/PGDAS), repartição do DAS por faixa exata,
+  `ingestao-documentos` (DRE/BP/folha/PGDAS), classificação automática de documentos
+  jogados numa pasta única por nome/conteúdo (`motor/classificador_documentos.py`,
+  pasta `empresas/<empresa>/novos/`), repartição do DAS por faixa exata,
   split payment/capital de giro (`motor/fluxo_caixa.py`), créditos de transição
   (`motor/transicao_creditos.py`), teste do cliente B2B (`motor/teste_cliente.py`)
   e checagens de coerência (`motor/validacao.py`).
