@@ -20,7 +20,8 @@ diretamente (ela roda o motor a partir do perfil). Ou manualmente:
 python3 motor/simulador.py exemplos/servicos_ti_teste.json base
 ```
 
-Cenários: `base` (26,5%) · `conservador` (27,5%) · `pessimista` (28,5%).
+Cenários: `base` (27,0% — referência oficial RFB) · `otimista` (26,5%) ·
+`conservador` (27,5%) · `pessimista` (28,5%).
 Saídas em `saidas/<empresa>/`: matriz CSV (2026–2033 × regimes) + resumo Markdown.
 
 ## Estrutura
