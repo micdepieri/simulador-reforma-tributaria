@@ -24,6 +24,7 @@ import transicao_creditos
 import teste_cliente
 import validacao
 import sensibilidade
+import precificacao
 import relatorio_html
 
 ANOS = list(range(2026, 2034))
@@ -71,11 +72,14 @@ def simular(perfil, params, cenario):
     split = fluxo_caixa.impacto_split_payment(debito_2033, params, perfil)
     cliente = teste_cliente.teste_cliente_b2b(perfil, base_simples, cenario, params)
     alertas = validacao.validar_perfil(perfil, params)
+    bases = {"presumido": base_presumido, "real": base_real, "simples": base_simples}
+    repasse_preco = precificacao.calcular(matriz, bases, perfil, ANOS)
 
     indicadores = {
         "split_payment_2033": split,
         "teste_cliente_b2b": cliente,
         "alertas_validacao": alertas,
+        "repasse_preco": repasse_preco,
         "creditos_transicao": memoria_creditos,
         "folha_sobre_receita": round(perfil["folha_anual"] / receita, 4) if receita else 0.0,
         "compras_creditaveis_sobre_receita": round(perfil["compras_creditaveis_anual"] / receita, 4) if receita else 0.0,
@@ -86,7 +90,6 @@ def simular(perfil, params, cenario):
         "regime_especifico": perfil["regime_especifico"],
         "sujeito_imposto_seletivo": perfil["sujeito_imposto_seletivo"],
     }
-    bases = {"presumido": base_presumido, "real": base_real, "simples": base_simples}
     return matriz, indicadores, bases
 
 
@@ -101,6 +104,19 @@ def gravar_csv(matriz, caminho):
             w.writerow([ano] +
                        [linha[r]["total"] if r in linha else "" for r in regimes] +
                        [linha[r].get("ibs_cbs_liquido", "") if r in linha else "" for r in regimes])
+
+
+def gravar_csv_repasse(repasse, caminho):
+    regimes = sorted({r for linha in repasse.values() for r in linha})
+    with open(caminho, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["ano"] + ["repasse_pct_%s" % r for r in regimes] +
+                   ["indice_preco_%s" % r for r in regimes])
+        for ano in ANOS:
+            linha = repasse.get(ano, {})
+            w.writerow([ano] +
+                       [linha[r].get("repasse_pct", "") if r in linha else "" for r in regimes] +
+                       [linha[r].get("indice_preco", "") if r in linha else "" for r in regimes])
 
 
 def gravar_resumo(perfil, params, cenario, matriz, indicadores, bases, caminho):
@@ -162,6 +178,34 @@ def gravar_resumo(perfil, params, cenario, matriz, indicadores, bases, caminho):
             ap("- **Custo comercial de permanecer no Simples cheio: R$ %s/ano** "
                "(pressão de preço ou perda de competitividade junto a clientes PJ)"
                % f"{cli['custo_comercial_simples_cheio']:,.0f}".replace(",", "."))
+    repasse = indicadores.get("repasse_preco")
+    if repasse:
+        ap("")
+        ap("## Repasse de preço necessário para manter a margem atual")
+        ap("")
+        ap("Aumento (ou redução) necessário no preço de venda em cada ano, para que a "
+           "empresa preserve a mesma margem líquida de tributos sobre consumo que tem "
+           "hoje — considerando a virada de ICMS/ISS \"por dentro\" para IBS/CBS \"por "
+           "fora\", com crédito integral e não-cumulativo (ver premissas no rodapé).")
+        ap("")
+        ap("| Ano | " + " | ".join(regimes) + " |")
+        ap("|---|" + "---|" * len(regimes))
+        for ano in ANOS:
+            cels = []
+            for r in regimes:
+                item = repasse.get(ano, {}).get(r)
+                if not item:
+                    cels.append("—")
+                elif item.get("repasse_pct") is None:
+                    cels.append("n/d")
+                else:
+                    cels.append("%+.1f%%" % item["repasse_pct"])
+            ap("| %d | %s |" % (ano, " | ".join(cels)))
+        ap("")
+        ap("- Valor positivo: preço precisa **subir** para manter a margem atual.")
+        ap("- Valor negativo: a empresa **pode reduzir o preço** e ainda manter a margem "
+           "atual (comum quando compras creditáveis são relevantes e hoje não geram "
+           "crédito pleno — Presumido e Real ganham não-cumulatividade ampla com o IBS/CBS).")
     if indicadores.get("creditos_transicao"):
         ap("")
         ap("## Créditos de transição aplicados")
@@ -190,6 +234,10 @@ def gravar_resumo(perfil, params, cenario, matriz, indicadores, bases, caminho):
     ap("- Simples cheio: DAS mantido pela LC 123; risco comercial B2B indicado acima.")
     ap("- Repartição do DAS pela faixa exata da LC 123 (conferir tabelas antes de uso em cliente real).")
     ap("- Split payment modelado como perda de float sobre o débito de IBS/CBS; créditos de transição consumidos ano a ano quando informados no perfil.")
+    ap("- Repasse de preço: modelo linear a volume constante, sem elasticidade de demanda; "
+       "compras creditáveis assumidas fixas em R$ ao mudar o preço de venda; ignora tributos "
+       "sobre o lucro (base não alterada pela reforma). É o repasse necessário para manter "
+       "margem, não uma previsão de aceitação de mercado nem uma recomendação comercial.")
     ap("- Estimativa de planejamento; não substitui análise do contador responsável (CRC).")
     with open(caminho, "w", encoding="utf-8") as f:
         f.write("\n".join(linhas) + "\n")
@@ -210,15 +258,18 @@ def main():
     pasta = os.path.join(raiz, "saidas", slug)
     os.makedirs(pasta, exist_ok=True)
     csv_path = os.path.join(pasta, "matriz_transicao_%s.csv" % cenario)
+    repasse_csv_path = os.path.join(pasta, "repasse_preco_%s.csv" % cenario)
     md_path = os.path.join(pasta, "resumo_%s.md" % cenario)
     html_path = os.path.join(pasta, "relatorio_%s.html" % cenario)
     gravar_csv(matriz, csv_path)
+    gravar_csv_repasse(indicadores["repasse_preco"], repasse_csv_path)
     gravar_resumo(perfil, params, cenario, matriz, indicadores, bases, md_path)
     sens = sensibilidade.rodar(simular, perfil, params, cenario)
     relatorio_html.gerar(perfil, params, cenario, matriz, indicadores, sens, ANOS, html_path)
 
     print("Simulação concluída — %s (cenário %s, parâmetros v%s)" % (perfil["nome"], cenario, params["versao"]))
     print("CSV:       %s" % csv_path)
+    print("Repasse:   %s" % repasse_csv_path)
     print("Resumo:    %s" % md_path)
     print("Relatório: %s" % html_path)
     print("Sensibilidade (2033): " + "; ".join(

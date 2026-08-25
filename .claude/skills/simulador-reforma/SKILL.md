@@ -46,9 +46,12 @@ description: Simula o impacto da Reforma Tributária (EC 132/2023 + LC 214/2025)
    na Calculadora — validação vale para o regime regular.
 
 5. **Entrega.** Apresente: melhor regime por ano, curva da carga na transição,
-   indicadores estruturais (folha/receita, crédito B2B), e SEMPRE as ressalvas
-   (alíquota pendente de fixação, versão dos parâmetros usada, análise final é do
-   contador CRC). Inclua as seções qualitativas: contratos vigentes, checklist de
+   indicadores estruturais (folha/receita, crédito B2B), o **repasse de preço
+   necessário** por ano/regime (`motor/precificacao.py` — ver seção própria no
+   resumo e no relatório HTML) e SEMPRE as ressalvas (alíquota pendente de
+   fixação, versão dos parâmetros usada, repasse é modelo a volume constante sem
+   elasticidade de demanda, análise final é do contador CRC). Inclua as seções
+   qualitativas: contratos vigentes (cláusula de revisão tributária), checklist de
    prontidão operacional, cashback/B2C se varejo.
 
 ## Regras invioláveis

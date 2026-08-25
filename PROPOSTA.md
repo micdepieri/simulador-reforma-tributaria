@@ -61,7 +61,10 @@ CSV. Nenhum número é gerado "de cabeça".
     técnica (CRC) em toda saída.
 
 ### Seções fixas do relatório (sem cálculo)
-12. Repasse de preço e contratos vigentes (cláusula de revisão tributária)
+12. ~~Repasse de preço~~ — **quantificado** em `motor/precificacao.py` (ver escopo
+    ampliado no README, seção "Repasse de preço — quantificado"); permanece
+    qualitativa apenas a parte de contratos vigentes (cláusula de revisão
+    tributária), que depende do texto contratual de cada cliente.
 13. Checklist de prontidão operacional (ERP, cadastros, obrigações acessórias 2026)
 14. Cashback/B2C — menção qualitativa quando o mix for varejo
 

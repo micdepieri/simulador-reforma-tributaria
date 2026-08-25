@@ -31,6 +31,7 @@ parametros/CHANGELOG.md             ← histórico de toda mudança normativa
 motor/perfil_fiscal.py              ← schema do perfil fiscal (entrada única)
 motor/regime_atual.py               ← Agente 2: Simples / Presumido / Real vigentes
 motor/ibs_cbs.py                    ← Agente 3: IBS/CBS + cronograma de transição
+motor/precificacao.py               ← repasse de preço para manter a margem (por dentro × por fora)
 motor/simulador.py                  ← CLI: matriz comparativa + resumo
 exemplos/                           ← perfis fiscais (2 empresas fictícias de validação)
 empresas/                           ← empresas reais em análise (fora do git, ver empresas/README.md)
@@ -71,6 +72,14 @@ reproduzíveis e auditáveis.
   da LC 214 (hotelaria −40%, transporte −40%, locação −70%, alienação −50%).
   Versão DOCX para cliente: pedir ao Claude ("gere o DOCX do relatório de <empresa>"),
   que converte via skill de documentos.
+- **Repasse de preço — quantificado (`motor/precificacao.py`):** para cada ano e
+  regime, calcula o aumento (ou redução) de preço necessário para manter a margem
+  líquida de tributos sobre consumo, isolando o efeito da virada de mecânica
+  ICMS/ISS "por dentro" → IBS/CBS "por fora" com crédito integral não-cumulativo.
+  Antes era só uma menção qualitativa no relatório; agora sai como tabela ano ×
+  regime no resumo Markdown, seção no relatório HTML e CSV próprio
+  (`repasse_preco_<cenario>.csv`). Modelo a volume constante, sem elasticidade de
+  demanda — repasse *necessário*, não previsão de aceitação de mercado.
 - **Fase 4 — concluída e TESTADA CONTRA A CALCULADORA OFICIAL REAL:** o módulo
   offline da Receita (V0042 – 1.3.0) está instalado em `calculadora-oficial/`
   e roda via Docker. Iniciar/parar:

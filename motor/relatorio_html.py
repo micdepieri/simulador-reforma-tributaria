@@ -130,6 +130,35 @@ def gerar(perfil, params, cenario, matriz, indicadores, sens, anos, caminho):
                         'padding:14px 18px;margin:24px 0"><strong style="color:#92400e">Alertas de consistência dos dados</strong>'
                         '<ul style="margin:8px 0 0 18px;color:#92400e">%s</ul></div>') % itens
 
+    repasse = indicadores.get("repasse_preco") or {}
+    linhas_repasse = []
+    for a in anos:
+        cels = []
+        for r in regimes:
+            item = repasse.get(a, {}).get(r)
+            if not item or item.get("repasse_pct") is None:
+                cels.append('<td style="padding:8px 12px;text-align:center">n/d</td>')
+            else:
+                v = item["repasse_pct"]
+                cor = "#ef4444" if v > 0 else ("#10b981" if v < 0 else "#6b7280")
+                cels.append('<td style="padding:8px 12px;text-align:right;color:%s;font-weight:600">%+.1f%%</td>' % (cor, v))
+        linhas_repasse.append('<tr style="background:%s"><td style="padding:8px 12px;font-weight:600">%d</td>%s</tr>'
+                              % ("#fdf8f9" if a % 2 else "#fff", a, "".join(cels)))
+    cab_repasse = "".join('<th style="padding:10px 12px;text-align:right">%s</th>' % ROTULOS.get(r, r) for r in regimes)
+    repasse_html = ""
+    if repasse:
+        repasse_html = ("""
+  <section style="background:#fff;border:1px solid #eee;border-radius:12px;padding:20px 22px;margin-top:22px;overflow-x:auto">
+    <h2 style="color:#7c0040;font-size:17px;margin:0 0 4px">Repasse de preço necessário para manter a margem atual</h2>
+    <p style="color:#6b7280;font-size:13px;margin:0 0 12px">Aumento (vermelho) ou redução (verde) necessário no preço de venda em cada ano, considerando a virada de ICMS/ISS "por dentro" para IBS/CBS "por fora" com crédito integral. Modelo a volume constante — ver premissas.</p>
+    <table style="border-collapse:collapse;width:100%%;font-size:13px">
+      <thead><tr style="background:#7c0040;color:#fff">
+        <th style="padding:10px 12px;text-align:left">Ano</th>%(cab_regimes)s
+      </tr></thead>
+      <tbody>%(linhas)s</tbody>
+    </table>
+  </section>""") % {"cab_regimes": cab_repasse, "linhas": "".join(linhas_repasse)}
+
     teste_cliente_html = ""
     if cli["receita_b2b"] > 0 and "simples_cheio" in regimes:
         teste_cliente_html = ('<div style="background:#fdf8f9;border:1px solid #7c0040;border-radius:10px;padding:18px;margin:24px 0">'
@@ -179,6 +208,8 @@ def gerar(perfil, params, cenario, matriz, indicadores, sens, anos, caminho):
     </table>
     <div style="color:#6b7280;font-size:12px;margin-top:8px">Célula destacada = menor carga do ano.</div>
   </section>
+
+  %(repasse)s
 
   %(teste_cliente)s
 
@@ -243,6 +274,7 @@ def gerar(perfil, params, cenario, matriz, indicadores, sens, anos, caminho):
         "versao": params["versao"], "data": params["data_vigencia"], "logo": logo_html,
         "cards": cards, "legenda": legenda, "svg": svg, "cab_regimes": cab,
         "linhas_matriz": "".join(linhas_matriz), "linhas_sens": "".join(linhas_sens),
+        "repasse": repasse_html,
         "teste_cliente": teste_cliente_html, "alertas": alertas_html, "avisos": avisos,
         "dias": split["dias_float_perdidos"], "giro": _brl(split["capital_giro_adicional"]),
         "taxa": 100 * split["taxa_capital_giro_aa"], "custo_fin": _brl(split["custo_financeiro_anual"]),
