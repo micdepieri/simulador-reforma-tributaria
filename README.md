@@ -99,6 +99,26 @@ reproduzíveis e auditáveis.
 - **Backlog (Fase 5):** regimes de alíquota própria (combustíveis, financeiro,
   planos de saúde, ZFM), NFS-e na ingestão, dashboard interativo multi-cliente.
 
+## Versionamento
+
+Releases do **código** (motores, skills, agentes) seguem [SemVer](https://semver.org/lang/pt-BR/)
+via tags git, com uma GitHub Release por tag:
+
+- **MAJOR:** mudança que quebra o formato do perfil fiscal ou das saídas (CSV/JSON).
+- **MINOR:** funcionalidade nova compatível com o que já existe (ex.: v1.2.0 — repasse de preço).
+- **PATCH:** correção de bug sem mudar comportamento esperado.
+
+```bash
+git tag -a vX.Y.Z -m "vX.Y.Z - resumo da entrega"
+git push origin main --follow-tags
+gh release create vX.Y.Z --title "..." --notes "..."
+```
+
+Isso é **independente** da versão em `parametros/parametros_reforma.json`
+(`"versao": "2026.08.5"`), que rastreia mudanças normativas (alíquotas, regras)
+e é atualizada pelo agente `atualizacao-normativa` — uma release de código pode
+não mexer em parâmetro nenhum, e vice-versa.
+
 ## Configurando em outra máquina
 
 1. Clone o repositório e garanta Python 3.9+ (sem dependências externas).
