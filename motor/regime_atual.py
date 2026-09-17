@@ -20,14 +20,30 @@ def _faixa_simples(tabela_anexo, rbt12):
     return None, None  # estourou o limite
 
 
+# Anexo presumido pela atividade quando o perfil não informa nenhum. É o caso
+# de quem hoje está no Presumido ou no Real e cabe no limite do Simples: o
+# comparativo exige um anexo, e só o perfil de quem JÁ está no Simples é
+# obrigado a trazê-lo (ver perfil_fiscal.CAMPOS_OBRIGATORIOS). Serviços entram
+# como III e o fator R logo abaixo decide entre III e V.
+ANEXO_POR_ATIVIDADE = {"comercio": "I", "industria": "II", "servicos": "III"}
+
+
 def anexo_efetivo(perfil, params):
-    """Aplica o fator R quando o anexo informado é III ou V."""
-    anexo = perfil["anexo_simples"]
+    """Anexo a aplicar e se ele foi presumido: (anexo, presumido).
+
+    Usa o anexo informado no perfil; na falta dele, presume pela atividade.
+    Aplica o fator R quando o anexo (informado ou presumido) é III ou V.
+    Devolve anexo None quando não há como determinar — quem chama decide.
+    """
+    anexo = perfil.get("anexo_simples")
+    presumido = not anexo
+    if presumido:
+        anexo = ANEXO_POR_ATIVIDADE.get(perfil.get("atividade"))
     if anexo in ("III", "V") and perfil["receita_bruta_anual"] > 0:
         fator_r = perfil["folha_anual"] / perfil["rbt12"]
         corte = params["simples_nacional"]["fator_r_corte"]
         anexo = "III" if fator_r >= corte else "V"
-    return anexo
+    return anexo, presumido
 
 
 def carga_simples(perfil, params):
@@ -36,7 +52,12 @@ def carga_simples(perfil, params):
     receita = perfil["receita_bruta_anual"]
     if rbt12 > sn["limite_anual"]:
         return {"erro": "RBT12 acima do limite do Simples (R$ %.2f)" % sn["limite_anual"]}
-    anexo = anexo_efetivo(perfil, params)
+    anexo, anexo_presumido = anexo_efetivo(perfil, params)
+    if anexo not in sn["anexos"]:
+        return {"erro": "anexo do Simples indeterminado: o perfil não traz anexo_simples e a "
+                        "atividade '%s' não permite presumi-lo. Informe anexo_simples (I a V) "
+                        "para incluir o Simples no comparativo."
+                        % (perfil.get("atividade") or "não informada")}
     tabela = sn["anexos"][anexo]
     idx, faixa = _faixa_simples(tabela, rbt12)
     aliq_efetiva = (rbt12 * faixa["aliquota"] - faixa["deduzir"]) / rbt12
@@ -53,6 +74,7 @@ def carga_simples(perfil, params):
     fracao_consumo = sum(rep.values())
     memoria = {
         "anexo_aplicado": anexo,
+        "anexo_presumido": anexo_presumido,
         "faixa": idx + 1,
         "fator_r": round(perfil["folha_anual"] / rbt12, 4) if rbt12 else None,
         "aliquota_nominal": faixa["aliquota"],
@@ -83,8 +105,16 @@ def carga_presumido(perfil, params):
     lp = params["lucro_presumido"]
     receita = perfil["receita_bruta_anual"]
     ativ = "servicos" if perfil["atividade"] == "servicos" else perfil["atividade"]
-    base_irpj = receita * lp["presuncao_irpj"][ativ]
-    base_csll = receita * lp["presuncao_csll"][ativ]
+    limite = lp.get("limite_anual_presuncao_padrao")
+    if limite is not None and "presuncao_irpj_majorada" in lp and "presuncao_csll_majorada" in lp:
+        normal = min(receita, limite)
+        excedente = max(0.0, receita - limite)
+    else:
+        normal, excedente = receita, 0.0
+    presuncao_irpj_majorada = lp.get("presuncao_irpj_majorada", lp["presuncao_irpj"])
+    presuncao_csll_majorada = lp.get("presuncao_csll_majorada", lp["presuncao_csll"])
+    base_irpj = normal * lp["presuncao_irpj"][ativ] + excedente * presuncao_irpj_majorada[ativ]
+    base_csll = normal * lp["presuncao_csll"][ativ] + excedente * presuncao_csll_majorada[ativ]
     irpj, adicional, csll = _irpj_csll(base_irpj, base_csll, lp)
     pis = receita * lp["pis"]
     cofins = receita * lp["cofins"]
@@ -102,7 +132,12 @@ def carga_presumido(perfil, params):
         "sobre_consumo": round(pis + cofins + icms + iss + ipi, 2),
         "sobre_lucro": round(irpj + adicional + csll, 2),
         "total": round(sum(tributos.values()), 2),
-        "memoria": {"base_presuncao_irpj": base_irpj, "base_presuncao_csll": base_csll},
+        "memoria": {
+            "base_presuncao_irpj": base_irpj, "base_presuncao_csll": base_csll,
+            "receita_normal": normal, "receita_excedente_majorado": excedente,
+            "presuncao_irpj_aplicada_media": base_irpj / receita if receita else 0,
+            "presuncao_csll_aplicada_media": base_csll / receita if receita else 0,
+        },
     }
 
 

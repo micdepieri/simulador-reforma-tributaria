@@ -4,6 +4,7 @@
 Retorna lista de alertas (não bloqueia a simulação; os alertas entram no
 resumo — a simulação também funciona como mini-diagnóstico dos dados).
 """
+import regime_atual
 
 
 def validar_perfil(perfil, params):
@@ -28,6 +29,16 @@ def validar_perfil(perfil, params):
     folha_receita = perfil["folha_anual"] / receita
     if folha_receita > 0.6:
         ap("Folha/receita de %.0f%% — muito alta; conferir se o total inclui encargos ou se há erro." % (100 * folha_receita))
+
+    if not perfil.get("anexo_simples") and perfil["rbt12"] <= params["simples_nacional"]["limite_anual"]:
+        anexo, _ = regime_atual.anexo_efetivo(perfil, params)
+        if anexo:
+            ap("Anexo do Simples não informado: presumido '%s' pela atividade '%s' para permitir o "
+               "comparativo. O anexo muda a alíquota inteira — confirmar o enquadramento antes de "
+               "levar o comparativo ao cliente." % (anexo, perfil["atividade"]))
+        else:
+            ap("Anexo do Simples não informado e não presumível pela atividade '%s' — os cenários "
+               "Simples ficaram de fora do comparativo." % (perfil["atividade"] or "não informada"))
 
     if perfil["regime_atual"] == "simples":
         if perfil["rbt12"] > params["simples_nacional"]["limite_anual"]:

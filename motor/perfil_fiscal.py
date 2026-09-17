@@ -55,6 +55,11 @@ def carregar_perfil(caminho):
         perfil["rbt12"] = perfil["receita_bruta_anual"]
     if perfil["regime_atual"] not in ("simples", "presumido", "real"):
         raise ValueError("regime_atual deve ser simples, presumido ou real")
+    # domínio fechado como o do regime: sem isso, uma atividade desconhecida só
+    # aparece lá na frente, como KeyError dentro das tabelas de presunção
+    if perfil["atividade"] not in ("comercio", "industria", "servicos"):
+        raise ValueError("atividade deve ser comercio, industria ou servicos (recebido: %r)"
+                         % perfil["atividade"])
     if perfil["regime_atual"] == "simples" and not perfil["anexo_simples"]:
         raise ValueError("anexo_simples é obrigatório quando regime_atual = simples")
     return perfil

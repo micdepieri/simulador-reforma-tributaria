@@ -1,0 +1,19 @@
+{
+  "_comentario": "Empresa FICTÍCIA de validação. Comércio no Lucro Presumido com RBT12 ABAIXO do limite do Simples e SEM anexo_simples — é o caso que quebrava o simulador (KeyError: None) antes da correção em regime_atual.anexo_efetivo. Serve de regressão: o anexo deve ser presumido como 'I' pela atividade e a simulação deve rodar inteira, com alerta no resumo.",
+  "nome": "Comercio Presumido Abaixo do Limite Teste",
+  "atividade": "comercio",
+  "cnae_principal": "4649-4/99",
+  "uf": "PR",
+  "municipio": "Curitiba",
+  "regime_atual": "presumido",
+  "receita_bruta_anual": 1800000.0,
+  "folha_anual": 510000.0,
+  "cmv_anual": 1080000.0,
+  "despesas_operacionais_anual": 145000.0,
+  "compras_creditaveis_anual": 1190000.0,
+  "mix_b2b": 0.45,
+  "categoria_redutor": "padrao",
+  "aliquota_efetiva_icms": 0.06,
+  "aliquota_efetiva_iss": 0.0,
+  "observacoes": "Perfil de regressão: sem anexo_simples de propósito."
+}
