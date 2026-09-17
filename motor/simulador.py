@@ -26,6 +26,7 @@ import validacao
 import sensibilidade
 import precificacao
 import relatorio_html
+import exportar_pdf
 
 ANOS = list(range(2026, 2034))
 
@@ -272,6 +273,11 @@ def main():
     print("Repasse:   %s" % repasse_csv_path)
     print("Resumo:    %s" % md_path)
     print("Relatório: %s" % html_path)
+    pdf_path = exportar_pdf.exportar(html_path)
+    if pdf_path:
+        print("PDF:       %s" % pdf_path)
+    else:
+        print("PDF:       não gerado (sem Chrome/Edge) — abra o HTML e use Ctrl+P > Salvar como PDF")
     print("Sensibilidade (2033): " + "; ".join(
         "%s -> %s" % (s["variacao"], s.get("melhor_regime", "erro")) for s in sens))
     for ano in ANOS:

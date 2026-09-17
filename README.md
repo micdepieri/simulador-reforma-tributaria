@@ -22,7 +22,9 @@ python3 motor/simulador.py exemplos/servicos_ti_teste.json base
 
 Cenários: `base` (27,0% — referência oficial RFB) · `otimista` (26,5%) ·
 `conservador` (27,5%) · `pessimista` (28,5%).
-Saídas em `saidas/<empresa>/`: matriz CSV (2026–2033 × regimes) + resumo Markdown.
+Saídas em `saidas/<empresa>/`: matriz CSV (2026–2033 × regimes), resumo Markdown
+(documento de trabalho do contador) e o relatório editorial em HTML + PDF
+(a peça que vai ao cliente).
 
 Quem usa o **Domínio ERP** pode puxar parte do perfil direto do banco em vez de
 coletar documento — é opcional e exige um conector MCP configurado à parte:
@@ -39,6 +41,8 @@ motor/regime_atual.py               ← Agente 2: Simples / Presumido / Real vig
 motor/ibs_cbs.py                    ← Agente 3: IBS/CBS + cronograma de transição
 motor/precificacao.py               ← repasse de preço para manter a margem (por dentro × por fora)
 motor/simulador.py                  ← CLI: matriz comparativa + resumo
+motor/relatorio_html.py             ← relatório editorial A4 para o cliente (8 páginas)
+motor/exportar_pdf.py               ← HTML → PDF via Chrome/Edge headless (opcional)
 motor/conector_dominio.py           ← opcional: perfil fiscal a partir do Domínio ERP (Sybase)
 docs/conector-dominio.md            ← como configurar o conector do Domínio (MCP + DSN ODBC)
 exemplos/                           ← perfis fiscais (2 empresas fictícias de validação)
@@ -75,12 +79,18 @@ reproduzíveis e auditáveis.
   (`motor/transicao_creditos.py`), teste do cliente B2B (`motor/teste_cliente.py`)
   e checagens de coerência (`motor/validacao.py`).
 - **Fase 3 — concluída:** sensibilidade ±20% em receita e compras creditáveis
-  (`motor/sensibilidade.py`, captura mudança de faixa/anexo/fator R), relatório HTML
-  autocontido com identidade Mappi (`motor/relatorio_html.py` — logo, gráfico SVG,
-  cards executivos, sem dependências), reduções próprias dos regimes específicos
-  da LC 214 (hotelaria −40%, transporte −40%, locação −70%, alienação −50%).
-  Versão DOCX para cliente: pedir ao Claude ("gere o DOCX do relatório de <empresa>"),
-  que converte via skill de documentos.
+  (`motor/sensibilidade.py`, captura mudança de faixa/anexo/fator R), relatório
+  editorial paginado com identidade Mappi (`motor/relatorio_html.py` — 8 páginas A4:
+  capa, veredito, curva da transição, comparativo, repasse, caixa e clientes,
+  sensibilidade, premissas; autocontido, sem dependências), reduções próprias dos
+  regimes específicos da LC 214 (hotelaria −40%, transporte −40%, locação −70%,
+  alienação −50%).
+
+  O relatório é a peça do **cliente**: versão executiva, sem os alertas de
+  consistência dos dados — esses ficam no resumo Markdown, que é o documento de
+  trabalho do contador. O PDF sai automático (`motor/exportar_pdf.py`) usando o
+  Chrome ou Edge já instalado, em headless; sem navegador, o HTML continua
+  imprimível por Ctrl+P > Salvar como PDF, com o mesmo resultado.
 - **Repasse de preço — quantificado (`motor/precificacao.py`):** para cada ano e
   regime, calcula o aumento (ou redução) de preço necessário para manter a margem
   líquida de tributos sobre consumo, isolando o efeito da virada de mecânica
