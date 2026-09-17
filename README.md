@@ -24,6 +24,11 @@ Cenários: `base` (27,0% — referência oficial RFB) · `otimista` (26,5%) ·
 `conservador` (27,5%) · `pessimista` (28,5%).
 Saídas em `saidas/<empresa>/`: matriz CSV (2026–2033 × regimes) + resumo Markdown.
 
+Quem usa o **Domínio ERP** pode puxar parte do perfil direto do banco em vez de
+coletar documento — é opcional e exige um conector MCP configurado à parte:
+veja [docs/conector-dominio.md](docs/conector-dominio.md). O `/iniciar` detecta
+o conector sozinho; sem ele, o fluxo por documentos segue igual.
+
 ## Estrutura
 
 ```
@@ -34,11 +39,14 @@ motor/regime_atual.py               ← Agente 2: Simples / Presumido / Real vig
 motor/ibs_cbs.py                    ← Agente 3: IBS/CBS + cronograma de transição
 motor/precificacao.py               ← repasse de preço para manter a margem (por dentro × por fora)
 motor/simulador.py                  ← CLI: matriz comparativa + resumo
+motor/conector_dominio.py           ← opcional: perfil fiscal a partir do Domínio ERP (Sybase)
+docs/conector-dominio.md            ← como configurar o conector do Domínio (MCP + DSN ODBC)
 exemplos/                           ← perfis fiscais (2 empresas fictícias de validação)
 empresas/                           ← empresas reais em análise (fora do git, ver empresas/README.md)
 .claude/skills/iniciar/              ← comando /iniciar — entrevista + orquestra todo o processo
 .claude/skills/simulador-reforma/   ← skill orquestradora da simulação
 .claude/agents/ingestao-documentos.md   ← classifica documentos e monta o perfil fiscal
+.claude/agents/conector-dominio.md      ← monta o perfil puxando do Domínio ERP (opcional)
 .claude/agents/atualizacao-normativa.md ← agente que atualiza parâmetros por norma nova
 ```
 

@@ -41,7 +41,25 @@ Caso contrário, crie a partir do modelo:
 cp -r empresas/_modelo "empresas/<slug>"
 ```
 
-### 2. Coleta de documentos
+### 2. Origem dos dados — Domínio ou documentos
+
+Antes de pedir documento, verifique se este ambiente tem o conector do
+**Domínio ERP**: as ferramentas MCP `sybase-cloud` (`executar_sql`,
+`listar_tabelas`, `descrever_tabela`) estão disponíveis nesta sessão?
+
+- **Não estão** (caso comum fora do escritório): siga direto para a coleta de
+  documentos abaixo, sem mencionar o conector. É o fluxo padrão.
+- **Estão**: pergunte ao usuário se a empresa é cliente do escritório e se ele
+  quer puxar do Domínio. Se sim, delegue ao agente `conector-dominio` — ele
+  combina a janela de competência (padrão: **últimos 6 meses** como base da
+  projeção), identifica a empresa, extrai e monta o perfil parcial.
+
+O Domínio entrega cadastro, regime, faturamento, carga efetiva e folha. Ele
+**não** entrega compras creditáveis, CMV, mix B2B nem o anexo do Simples — isso
+continua vindo de documento. Ou seja: mesmo no caminho do Domínio, siga para a
+coleta abaixo pedindo só o que ficou faltando (o agente devolve a lista exata).
+
+### 2b. Coleta de documentos
 
 Diga claramente ao usuário: *"pode jogar todos os arquivos da empresa em
 `empresas/<slug>/novos/` — DRE, balanço, folha, PGDAS-D, XMLs de entrada e

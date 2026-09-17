@@ -1,0 +1,75 @@
+{
+  "_comentario": "Extração FICTÍCIA do Domínio ERP, para testar motor/conector_dominio.py sem banco. Comércio no Lucro Presumido, janela de 6 meses. Rodar: python3 motor/conector_dominio.py --extracao exemplos/extracao_dominio_teste.json",
+  "extraido_em": "2026-09-17",
+  "fonte": "ficticio-teste",
+  "codi_emp": 9999,
+  "periodo": {"inicio": "2026-03-01", "fim": "2026-08-31", "meses": 6},
+  "cadastro": [
+    {
+      "codi_emp": 9999,
+      "nome_emp": "COMERCIO TESTE DOMINIO LTDA",
+      "apel_emp": "COMERCIO TESTE",
+      "cgce_emp": "00000000000191",
+      "esta_emp": "PR",
+      "stat_emp": "A",
+      "ultimo_periodo": "2026-08-01"
+    }
+  ],
+  "impostos_apurados": [
+    {"codi_imp": 1, "sigla": "ICMS", "imposto": "ICMS"},
+    {"codi_imp": 4, "sigla": "PIS", "imposto": "PIS cumulativo"},
+    {"codi_imp": 5, "sigla": "COFINS", "imposto": "COFINS cumulativo"},
+    {"codi_imp": 6, "sigla": "CSLL", "imposto": "Contribuicao Social"},
+    {"codi_imp": 7, "sigla": "IRPJ", "imposto": "IRPJ Lucro Presumido"}
+  ],
+  "lucro_real": [],
+  "carga_tributaria": [
+    {"codi_imp": 1, "sigla": "ICMS", "total_devido": 54000.0},
+    {"codi_imp": 5, "sigla": "COFINS", "total_devido": 27000.0},
+    {"codi_imp": 4, "sigla": "PIS", "total_devido": 5850.0},
+    {"codi_imp": 7, "sigla": "IRPJ", "total_devido": 10800.0},
+    {"codi_imp": 6, "sigla": "CSLL", "total_devido": 9720.0},
+    {"codi_imp": 31, "sigla": "ST/AT", "total_devido": 4300.0}
+  ],
+  "faturamento_servicos": [],
+  "faturamento_saidas": [
+    {"ano": 2026, "mes": 3, "qtd_notas": 210, "faturamento": 148000.0, "valor_produtos": 142000.0},
+    {"ano": 2026, "mes": 4, "qtd_notas": 198, "faturamento": 151500.0, "valor_produtos": 145200.0},
+    {"ano": 2026, "mes": 5, "qtd_notas": 224, "faturamento": 155000.0, "valor_produtos": 148900.0},
+    {"ano": 2026, "mes": 6, "qtd_notas": 205, "faturamento": 143200.0, "valor_produtos": 137500.0},
+    {"ano": 2026, "mes": 7, "qtd_notas": 231, "faturamento": 158300.0, "valor_produtos": 151800.0},
+    {"ano": 2026, "mes": 8, "qtd_notas": 219, "faturamento": 144000.0, "valor_produtos": 138600.0}
+  ],
+  "entradas_por_cfop": [
+    {"cfop": 1102, "natureza": "Compra para comercializacao", "qtd_notas": 180, "valor_contabil": 302000.0, "valor_produtos": 296000.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 2102, "natureza": "Compra para comercializacao - outro estado", "qtd_notas": 96, "valor_contabil": 108000.0, "valor_produtos": 105200.0, "ipi": 2100.0, "icms_st": 0.0},
+    {"cfop": 2403, "natureza": "Compra para comercializacao com ST", "qtd_notas": 41, "valor_contabil": 63000.0, "valor_produtos": 60800.0, "ipi": 0.0, "icms_st": 8900.0},
+    {"cfop": 1556, "natureza": "Compra de material para uso e consumo", "qtd_notas": 58, "valor_contabil": 27500.0, "valor_produtos": 26900.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 1551, "natureza": "Compra de bem para o ativo imobilizado", "qtd_notas": 4, "valor_contabil": 38000.0, "valor_produtos": 38000.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 1253, "natureza": "Compra de energia eletrica", "qtd_notas": 6, "valor_contabil": 14800.0, "valor_produtos": 14800.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 2352, "natureza": "Aquisicao de servico de transporte", "qtd_notas": 72, "valor_contabil": 19400.0, "valor_produtos": 19400.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 1933, "natureza": "Aquisicao de servico tributado pelo ISS", "qtd_notas": 18, "valor_contabil": 22300.0, "valor_produtos": 22300.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 1202, "natureza": "Devolucao de venda de mercadoria", "qtd_notas": 23, "valor_contabil": 11200.0, "valor_produtos": 11200.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 1152, "natureza": "Transferencia de mercadoria entre filiais", "qtd_notas": 9, "valor_contabil": 31000.0, "valor_produtos": 31000.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 1949, "natureza": "Outra entrada de mercadoria nao especificada", "qtd_notas": 7, "valor_contabil": 9600.0, "valor_produtos": 9600.0, "ipi": 0.0, "icms_st": 0.0},
+    {"cfop": 2411, "natureza": "Devolucao de venda com ST", "qtd_notas": 3, "valor_contabil": 4100.0, "valor_produtos": 4100.0, "ipi": 0.0, "icms_st": 0.0}
+  ],
+  "entradas_por_acumulador": [
+    {"codi_acu": 10, "acumulador": "COMPRA REVENDA", "qtd_notas": 276, "valor_contabil": 410000.0},
+    {"codi_acu": 20, "acumulador": "COMPRA ST", "qtd_notas": 41, "valor_contabil": 63000.0},
+    {"codi_acu": 30, "acumulador": "USO E CONSUMO", "qtd_notas": 58, "valor_contabil": 27500.0},
+    {"codi_acu": 40, "acumulador": "ATIVO IMOBILIZADO", "qtd_notas": 4, "valor_contabil": 38000.0},
+    {"codi_acu": 50, "acumulador": "DESPESAS OPERACIONAIS", "qtd_notas": 96, "valor_contabil": 56500.0}
+  ],
+  "entradas_credito_ibs": [],
+  "entradas_credito_cbs": [],
+  "folha": [
+    {"competencia": "2026-03-01", "proventos": 41200.0},
+    {"competencia": "2026-04-01", "proventos": 41200.0},
+    {"competencia": "2026-05-01", "proventos": 42800.0},
+    {"competencia": "2026-06-01", "proventos": 42800.0},
+    {"competencia": "2026-07-01", "proventos": 43500.0},
+    {"competencia": "2026-08-01", "proventos": 43500.0}
+  ],
+  "headcount": [{"total_funcionarios": 14}]
+}
