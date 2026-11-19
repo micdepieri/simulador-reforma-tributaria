@@ -66,7 +66,8 @@ def carga_ano_presumido_real(carga_atual, perfil, ano, cenario, params):
     ipi = t["IPI"] * (1.0 if perfil["zona_franca_manaus"] else c["ipi_vigente"])
     novo = ibs_cbs_liquido(perfil, ano, cenario, params)
     ibs_cbs = 0.0 if novo["compensavel_teste"] else novo["liquido"]
-    total = carga_atual["sobre_lucro"] + pis_cofins + icms_iss + ipi + ibs_cbs
+    cpp = carga_atual.get("sobre_folha", 0.0)
+    total = carga_atual["sobre_lucro"] + pis_cofins + icms_iss + ipi + ibs_cbs + cpp
     return {
         "ano": ano, "regime": carga_atual["regime"],
         "sobre_lucro": round(carga_atual["sobre_lucro"], 2),
@@ -74,6 +75,7 @@ def carga_ano_presumido_real(carga_atual, perfil, ano, cenario, params):
         "icms_iss_legado": round(icms_iss, 2),
         "ipi_legado": round(ipi, 2),
         "ibs_cbs_liquido": round(ibs_cbs, 2),
+        "cpp_patronal": round(cpp, 2),
         "total": round(total, 2),
         "memoria_ibs_cbs": novo,
     }

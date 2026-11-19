@@ -101,6 +101,13 @@ def _irpj_csll(base_irpj, base_csll, params_regime):
     return irpj, adicional, csll
 
 
+def _aliquota_cpp(perfil, params):
+    aliq = perfil.get("aliquota_efetiva_cpp")
+    if aliq is None:
+        aliq = params["encargos_patronais"]["aliquota_cpp_padrao"]
+    return aliq
+
+
 def carga_presumido(perfil, params):
     lp = params["lucro_presumido"]
     receita = perfil["receita_bruta_anual"]
@@ -121,22 +128,35 @@ def carga_presumido(perfil, params):
     icms = receita * perfil["aliquota_efetiva_icms"]
     iss = receita * perfil["aliquota_efetiva_iss"]
     ipi = receita * perfil["aliquota_efetiva_ipi"]
+    aliq_cpp = _aliquota_cpp(perfil, params)
+    cpp = perfil["folha_anual"] * aliq_cpp
+    # o override representa a carga MISTA real de hoje (ex.: uma unidade no
+    # Real e outra no Presumido) — só se aplica quando o Presumido É de fato
+    # o regime_atual do perfil; numa comparação hipotética ("e se a empresa
+    # inteira estivesse no Presumido?") ele não deve vazar para cá.
+    override = perfil.get("irpj_csll_anual_override") if perfil.get("regime_atual") == "presumido" else None
+    irpj_final = override["irpj"] if override else irpj + adicional
+    csll_final = override["csll"] if override else csll
     tributos = {
-        "IRPJ": round(irpj + adicional, 2), "CSLL": round(csll, 2),
+        "IRPJ": round(irpj_final, 2), "CSLL": round(csll_final, 2),
         "PIS": round(pis, 2), "COFINS": round(cofins, 2),
         "ICMS": round(icms, 2), "ISS": round(iss, 2), "IPI": round(ipi, 2),
+        "CPP": round(cpp, 2),
     }
     return {
         "regime": "presumido",
         "tributos": tributos,
         "sobre_consumo": round(pis + cofins + icms + iss + ipi, 2),
-        "sobre_lucro": round(irpj + adicional + csll, 2),
+        "sobre_lucro": round(irpj_final + csll_final, 2),
+        "sobre_folha": round(cpp, 2),
         "total": round(sum(tributos.values()), 2),
         "memoria": {
             "base_presuncao_irpj": base_irpj, "base_presuncao_csll": base_csll,
             "receita_normal": normal, "receita_excedente_majorado": excedente,
             "presuncao_irpj_aplicada_media": base_irpj / receita if receita else 0,
             "presuncao_csll_aplicada_media": base_csll / receita if receita else 0,
+            "aliquota_cpp_aplicada": aliq_cpp,
+            "irpj_csll_override_aplicado": bool(override),
         },
     }
 
@@ -148,23 +168,49 @@ def carga_real(perfil, params):
              - perfil["folha_anual"])
     base = max(0.0, lucro)
     irpj, adicional, csll = _irpj_csll(base, base, lr)
-    base_pc = max(0.0, receita - perfil["compras_creditaveis_anual"])
-    pis = base_pc * lr["pis"]
-    cofins = base_pc * lr["cofins"]
+    aliq_cumulativo = perfil.get("aliquota_efetiva_pis_cofins_cumulativo")
+    if aliq_cumulativo is not None:
+        # Regime cumulativo por opção/benefício (ex.: Lei 10.833/2003 art. 10 —
+        # receitas de desenvolvimento de software), mesmo estando no Lucro Real:
+        # alíquota combinada incide sobre a receita bruta, SEM crédito sobre compras.
+        base_pc = receita
+        lp_ref = params.get("lucro_presumido", {})
+        peso_pis = lp_ref.get("pis", 0.0065)
+        peso_cofins = lp_ref.get("cofins", 0.03)
+        peso_total = peso_pis + peso_cofins
+        pis_cofins_total = receita * aliq_cumulativo
+        pis = pis_cofins_total * (peso_pis / peso_total if peso_total else 0.0)
+        cofins = pis_cofins_total * (peso_cofins / peso_total if peso_total else 0.0)
+    else:
+        base_pc = max(0.0, receita - perfil["compras_creditaveis_anual"])
+        pis = base_pc * lr["pis"]
+        cofins = base_pc * lr["cofins"]
     icms = receita * perfil["aliquota_efetiva_icms"]
     iss = receita * perfil["aliquota_efetiva_iss"]
     ipi = receita * perfil["aliquota_efetiva_ipi"]
+    aliq_cpp = _aliquota_cpp(perfil, params)
+    cpp = perfil["folha_anual"] * aliq_cpp
+    # idem: o override só vale quando Real É o regime_atual do perfil (ver
+    # nota equivalente em carga_presumido).
+    override = perfil.get("irpj_csll_anual_override") if perfil.get("regime_atual") == "real" else None
+    irpj_final = override["irpj"] if override else irpj + adicional
+    csll_final = override["csll"] if override else csll
     tributos = {
-        "IRPJ": round(irpj + adicional, 2), "CSLL": round(csll, 2),
+        "IRPJ": round(irpj_final, 2), "CSLL": round(csll_final, 2),
         "PIS": round(pis, 2), "COFINS": round(cofins, 2),
         "ICMS": round(icms, 2), "ISS": round(iss, 2), "IPI": round(ipi, 2),
+        "CPP": round(cpp, 2),
     }
     return {
         "regime": "real",
         "tributos": tributos,
         "sobre_consumo": round(pis + cofins + icms + iss + ipi, 2),
-        "sobre_lucro": round(irpj + adicional + csll, 2),
+        "sobre_lucro": round(irpj_final + csll_final, 2),
+        "sobre_folha": round(cpp, 2),
         "total": round(sum(tributos.values()), 2),
         "memoria": {"lucro_estimado": round(lucro, 2),
-                    "base_pis_cofins_nao_cumulativo": round(base_pc, 2)},
+                    "base_pis_cofins_nao_cumulativo": round(base_pc, 2),
+                    "pis_cofins_regime": "cumulativo" if aliq_cumulativo is not None else "nao_cumulativo",
+                    "aliquota_cpp_aplicada": aliq_cpp,
+                    "irpj_csll_override_aplicado": bool(override)},
     }

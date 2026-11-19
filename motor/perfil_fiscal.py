@@ -33,6 +33,9 @@ PADROES = {
     "aliquota_efetiva_icms": 0.0,   # sobre receita; 0 para serviços puros
     "aliquota_efetiva_iss": 0.0,    # sobre receita; 0 para comércio puro
     "aliquota_efetiva_ipi": 0.0,
+    "aliquota_efetiva_cpp": None,   # INSS patronal sobre a folha (Presumido/Real); None = usa encargos_patronais.aliquota_cpp_padrao
+    "aliquota_efetiva_pis_cofins_cumulativo": None,  # PIS+COFINS combinado sobre a receita, SEM crédito sobre compras — usar quando regime_atual="real" mas a empresa apura PIS/COFINS pelo regime CUMULATIVO por opção/benefício (ex.: Lei 10.833/2003 art. 10, receitas de desenvolvimento de software). None = mantém o cálculo não-cumulativo padrão do Lucro Real (lucro_real.pis/.cofins sobre receita - compras_creditaveis_anual).
+    "irpj_csll_anual_override": None,  # {"irpj": valor, "csll": valor} — substitui o IRPJ/CSLL calculado pela fórmula padrão do regime_atual. Usar quando o perfil consolida CNPJs com regimes de IRPJ/CSLL DIFERENTES entre si (ex.: uma unidade no Real e outra no Presumido, cada uma apurando separadamente) — os valores devem vir de carga_real()/carga_presumido() rodados à parte para cada unidade e somados, nunca calculados fora do motor. Documentar a memória de cálculo em observacoes. None = usa o cálculo padrão do regime_atual sobre o perfil consolidado inteiro.
     "zona_franca_manaus": False,
     # Fase 2 — split payment e créditos de transição
     "prazo_recolhimento_atual_dias": None,  # None = usa padrão de parametros.financeiro

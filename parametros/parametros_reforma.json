@@ -1,15 +1,17 @@
 {
-  "versao": "2026.08.5",
-  "data_vigencia": "2026-08-22",
+  "versao": "2026.08.6",
+  "data_vigencia": "2026-08-25",
   "fontes": [
     "EC 132/2023",
     "LC 214/2025",
     "LC 123/2006 (Anexos I-V, tabelas vigentes)",
-    "Estimativas de aliquota de referencia - Ministerio da Fazenda (pendente de fixacao pelo Senado)"
+    "Estimativas de aliquota de referencia - Ministerio da Fazenda (pendente de fixacao pelo Senado)",
+    "LC 224/2025 (sancionada 26/12/2025) + IN RFB 2.305/2025 e IN RFB 2.306/2026 - majoracao de 10% relativo nos percentuais de presuncao de IRPJ/CSLL do Lucro Presumido sobre a parcela da receita anual que exceder R$ 5.000.000,00. Vigencia: IRPJ desde 01/01/2026; CSLL desde 01/04/2026 (anterioridade nonagesimal, art. 195 par. 6 CF). CONTROVERSIA JUDICIAL ATIVA - ver aviso abaixo."
   ],
   "avisos": [
     "Aliquota de referencia IBS+CBS ainda nao fixada em resolucao do Senado - cenarios sao estimativas.",
-    "Percentuais de reparticao do DAS sao os da faixa efetiva; conferir contra LC 123 antes de uso em cliente real."
+    "Percentuais de reparticao do DAS sao os da faixa efetiva; conferir contra LC 123 antes de uso em cliente real.",
+    "Majoracao de 10% na presuncao do Lucro Presumido (LC 224/2025): ha controversia judicial ATIVA e NAO pacificada - a 1a Vara Federal de Resende/RJ concedeu liminar em janeiro/2026 suspendendo a exigibilidade da majoracao para o autor daquela acao (fundamento: Lucro Presumido nao e beneficio fiscal; majoracao tributaria 'renda ficticia'). A liminar tem efeito apenas inter partes (nao vale para todos os contribuintes) e pode ser revertida ou mantida por instancias superiores - o simulador aplica a majoracao como regra vigente por padrao, mas o usuario deve avaliar caso a caso se o cliente tem decisao judicial propria."
   ],
 
   "cenarios_aliquota": {
@@ -178,12 +180,24 @@
   "lucro_presumido": {
     "presuncao_irpj": { "comercio": 0.08, "industria": 0.08, "servicos": 0.32, "transporte_carga": 0.08, "servicos_hospitalares": 0.08 },
     "presuncao_csll": { "comercio": 0.12, "industria": 0.12, "servicos": 0.32, "transporte_carga": 0.12, "servicos_hospitalares": 0.12 },
+    "presuncao_irpj_majorada": { "comercio": 0.088, "industria": 0.088, "servicos": 0.352, "transporte_carga": 0.088, "servicos_hospitalares": 0.088 },
+    "presuncao_csll_majorada": { "comercio": 0.132, "industria": 0.132, "servicos": 0.352, "transporte_carga": 0.132, "servicos_hospitalares": 0.132 },
+    "limite_anual_presuncao_padrao": 5000000.0,
     "irpj": 0.15, "irpj_adicional": 0.10, "irpj_adicional_limite_anual": 240000.0,
-    "csll": 0.09, "pis": 0.0065, "cofins": 0.03
+    "csll": 0.09, "pis": 0.0065, "cofins": 0.03,
+    "nota_majoracao_lc224": "LC 224/2025 + IN RFB 2.305/2025 e 2.306/2026: acrescimo de 10% relativo sobre os percentuais de presuncao_irpj/presuncao_csll, incidente apenas sobre a parcela da RECEITA ANUAL que exceder limite_anual_presuncao_padrao (R$ 5.000.000,00). presuncao_*_majorada = presuncao_* x 1,10 (ja calculado). SIMPLIFICACAO DECLARADA: a norma opera em base TRIMESTRAL (limite de R$ 1.250.000,00/trimestre, com transporte de saldo entre trimestres e ajuste no 4o trimestre); o motor trabalha em base ANUAL e nao modela esse detalhe trimestral - aplica a majoracao proporcionalmente sobre o excedente anual, o que e uma aproximacao razoavel em regime de maturidade mas pode divergir ligeiramente da apuracao trimestral real, sobretudo em anos de receita irregular entre trimestres. Vigencia: IRPJ desde 01/01/2026; CSLL desde 01/04/2026. O motor (regra permanente reutilizada para 2026-2033) aplica a majoracao de CSLL ao ano inteiro de 2026, o que e uma simplificacao FAVORAVEL ao contribuinte no ano de transicao real (CSLL 2026 real só passa a ser majorada a partir do 2o trimestre)."
   },
 
   "lucro_real": {
     "irpj": 0.15, "irpj_adicional": 0.10, "irpj_adicional_limite_anual": 240000.0,
     "csll": 0.09, "pis": 0.0165, "cofins": 0.076
+  },
+
+  "encargos_patronais": {
+    "aliquota_cpp_padrao": 0.278,
+    "inss_patronal": 0.20,
+    "rat_medio_padrao": 0.02,
+    "terceiros_padrao": 0.058,
+    "nota": "CPP (INSS patronal) sobre a folha, devido POR FORA no Presumido e no Real — no Simples Anexo I-III/V ja vem embutido na aliquota do DAS (ver reparticao_faixas.cpp de cada anexo), por isso nao se soma de novo la. aliquota_cpp_padrao = INSS patronal 20% + RAT medio 2% (pode variar 1-3% conforme grau de risco) + Terceiros/Sistema S ~5,8% (varia por CNAE) = 27,8% e um DEFAULT GENERICO — o RAT real depende do FAP (Fator Acidentario de Prevencao) especifico do CNPJ, que pode reduzir ou ampliar o RAT em ate 50%. Nao modela CPRB (desoneracao da folha, Lei 14.973/2024, transicao 2025-2027) para os CNAEs elegiveis, que substitui a CPP por uma contribuicao sobre a receita bruta - checar elegibilidade do CNAE antes de aplicar o default a um cliente real. Perfil pode sobrepor com aliquota_efetiva_cpp quando o FAP/RAT ou a CPRB do cliente forem conhecidos."
   }
 }
