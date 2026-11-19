@@ -37,8 +37,11 @@ pergunte ao usuário em vez de adivinhar. Confira também `conflitos_nome`
 ## Extração por documento
 
 - **XMLs de NF-e**: NÃO leia um a um — rode
-  `python3 motor/ingestao_xml.py <pasta> <cnpj>` e use o resumo consolidado
-  (receita por direção, mix_b2b, UFs de destino, NCMs, ICMS destacado).
+  `python3 motor/ingestao_xml.py empresas/<empresa>/documentos/xmls <cnpj> --saida saidas/<empresa>/resumo_xmls.json`
+  (percorre `entrada/` e `saida/`) e use o resumo consolidado: receita por direção,
+  mix_b2b, UFs de destino, ICMS destacado, **receita por NCM com descrições**
+  (`itens_para_classificar`) e **compras por regime do fornecedor** (CRT: Simples ×
+  regime normal) e por cClassTrib.
 - **DRE**: receita bruta anual, CMV, despesas operacionais. Se vier PDF/Excel,
   leia com Read e extraia os totais anuais.
 - **Balanço Patrimonial**: imobilizado (créditos futuros), estoques, e saldos
@@ -52,9 +55,16 @@ pergunte ao usuário em vez de adivinhar. Confira também `conflitos_nome`
 1. Alíquotas de ICMS/ISS no perfil são as EFETIVAS pagas (tributo pago ÷ receita),
    nunca as nominais — é assim que benefícios fiscais atuais entram na conta.
 2. `compras_creditaveis_anual` = entradas com direito a crédito (resumo dos XMLs
-   de entrada, expurgando devoluções/transferências pelos CFOPs listados).
-3. Classifique `categoria_redutor` pelos NCMs/atividade contra as listas de
-   `parametros/parametros_reforma.json`; sinalize `regime_especifico` e
+   de entrada, expurgando devoluções/transferências pelos CFOPs listados) — **só de
+   fornecedores do regime normal**; compras de fornecedor do Simples
+   (`compras_por_regime_fornecedor`) ficam fora e o valor vai para `observacoes`
+   (fornecedor do Simples só repassa a parcela de IBS/CBS que está dentro do DAS).
+3. **Classificação LC 214 pela base oficial da Receita**: delegue ao agente
+   `classificacao-oficial` (ele usa `motor/base_oficial.py`, decide com evidência os
+   itens condicionados ao texto dos anexos e grava `mix_redutores` no perfil). Sem
+   itens identificáveis (sem XML nem catálogo), classifique `categoria_redutor` pela
+   atividade contra `parametros/parametros_reforma.json` e registre que não houve
+   classificação item a item. Sinalize `regime_especifico` e
    `sujeito_imposto_seletivo` quando o CNAE/NCM indicar.
 4. Rode as checagens: a simulação já valida via `motor/validacao.py`, mas
    antecipe inconsistências óbvias (DRE × PGDAS × XMLs divergentes) e liste-as.

@@ -1,5 +1,55 @@
 # Changelog dos parâmetros da Reforma Tributária
 
+## v2026.11.1 — 19/11/2026 (aprovado pelo usuário)
+
+Integração com a **Calculadora de Tributos da RFB em código aberto** (Release 15,
+out/2026): `github.com/ReceitaFederal/calculadora-rtc-regime-regular` (contém o banco
+normativo inteiro em scripts SQL — versão V0059, 30/09/2026) e
+`github.com/ReceitaFederal/calculadora-rtc-simples-nacional`.
+
+- **`cenarios_aliquota.base.fonte` — procedência corrigida.** O texto dizia "Referência
+  oficial embarcada na Calculadora RFB, banco V0042". A própria RFB **apagou** essas
+  alíquotas na migração **V0053 (28/08/2026)** — `DELETE FROM ALIQUOTA_REFERENCIA ...
+  INICIO_VIGENCIA > '2026-12-31'` — por não estarem definidas em lei; o banco atual só
+  traz 2026 (0,9% CBS + 0,1% IBS) e a documentação oficial diz que a partir de 2027 as
+  alíquotas devem ser informadas em `aliquotasNominais`. **O valor (27,0%) não mudou**;
+  muda o rótulo: é estimativa (último valor que a RFB chegou a publicar), não referência
+  oficial. Novo aviso em `avisos`.
+- **`calculadora_oficial` reescrito para o contrato 1.6.0** e para a instalação via
+  GitHub (o pacote zip/Docker V0042 – 1.3.0 do portal piloto-cbs está superado): novos
+  `fonte_codigo`, `base_url_simples` (:8082), `endpoint_calculo_observabilidade`,
+  `endpoint_calculo_simples`, `fracao_ibs_estadual_nominal` (reparte o IBS do cenário
+  entre UF e município só para montar o payload — 16,0/18,5) e o bloco `simples`
+  (código de atividade `cAtivSN` por anexo e tipo de documento por atividade, do catálogo
+  oficial da NT 2026.005 / migração V0049).
+- **Novo bloco `base_oficial`**: repositório e versão de referência do banco (V0059) com
+  que os parâmetros foram conferidos. **Conferência feita**: os percentuais de
+  `redutores_lc214` e `regimes_especificos_detalhe` batem com o banco oficial (200052
+  profissões intelectuais −30%, 200029 saúde −60%, 200028 educação −60%, 200003 cesta
+  básica −100%, 200027 locação −70%, 200047 bares e restaurantes −40%, 200049 transporte
+  coletivo −40%) — nenhum valor alterado.
+- **Mudanças de código** (fora do JSON, mas compatíveis com perfis existentes):
+  - `motor/base_oficial.py` (novo): monta o banco oficial em SQLite puro a partir do
+    GitHub e classifica itens por NCM/NBS/item da LC 116 → cClassTrib. Reduções que o
+    vínculo oficial condiciona à **descrição do produto** num anexo da LC 214 ficam
+    "a confirmar" (o mix as simula como integral até alguém conferir) — no teste com
+    XMLs reais de um varejista, o vínculo só por NCM teria dado −60% a corretivo de
+    papelaria ("bioinsumo"), alíquota zero a torrone ("pão francês") etc.
+  - `perfil_fiscal.py`: campos opcionais `mix_redutores`, `classificacao_oficial`,
+    `qualificacoes_fornecedor` (validados).
+  - `ibs_cbs.py`: `reducoes_saida()` — regime específico > mix por item > categoria;
+    CBS e IBS podem ter reduções diferentes (ex.: 200025, CBS −100% / IBS −60%).
+    `aliquotas_simples_ibs_cbs()` — pCBSSN/pIBSSN do Simples cheio por ano.
+  - `teste_cliente.py`: passa a usar a mesma redução de saída do motor — **correção**:
+    antes ignorava `regime_especifico` no crédito do cliente B2B.
+  - `ingestao_xml.py`: receita por NCM com descrições, `itens_para_classificar`,
+    compras por regime do fornecedor (CRT) e por cClassTrib; percorre subpastas.
+  - `validacao_oficial.py`: contrato 1.6.0 (`dhFatoGerador`, `aliquotasNominais`,
+    observabilidade por item), modo `--simples`, `--dados-abertos` sem API (lê o banco local).
+- Validação de regressão: `exemplos/servicos_ti_teste.json` e `exemplos/comercio_teste.json`,
+  cenários base e pessimista — matrizes **idênticas byte a byte** às da versão anterior
+  (perfis sem `mix_redutores` seguem o caminho original).
+
 ## v2026.08.6 — 25/08/2026 (aprovado pelo usuário)
 
 - **Lucro Presumido — majoração de 10% na presunção de IRPJ/CSLL sobre o

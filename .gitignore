@@ -26,3 +26,9 @@ __pycache__/
 
 # Zips do pacote oficial (recuperáveis do download; não versionar)
 calculadora-oficial/*.zip
+
+# Calculadora oficial em código aberto (GitHub da RFB) — regenerável:
+# banco normativo montado por motor/base_oficial.py e fontes clonadas pelo instalar-github
+calculadora-oficial/base/
+calculadora-oficial/regime-regular/
+calculadora-oficial/simples-nacional/

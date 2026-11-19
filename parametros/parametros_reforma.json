@@ -1,21 +1,23 @@
 {
-  "versao": "2026.08.6",
-  "data_vigencia": "2026-08-25",
+  "versao": "2026.11.1",
+  "data_vigencia": "2026-11-19",
   "fontes": [
     "EC 132/2023",
     "LC 214/2025",
     "LC 123/2006 (Anexos I-V, tabelas vigentes)",
     "Estimativas de aliquota de referencia - Ministerio da Fazenda (pendente de fixacao pelo Senado)",
+    "Calculadora de Tributos RFB - Release 15, codigo aberto (github.com/ReceitaFederal/calculadora-rtc-regime-regular e calculadora-rtc-simples-nacional) - banco normativo V0059 (30/09/2026); NT 2026.005 (Simples Nacional no IBS/CBS)",
     "LC 224/2025 (sancionada 26/12/2025) + IN RFB 2.305/2025 e IN RFB 2.306/2026 - majoracao de 10% relativo nos percentuais de presuncao de IRPJ/CSLL do Lucro Presumido sobre a parcela da receita anual que exceder R$ 5.000.000,00. Vigencia: IRPJ desde 01/01/2026; CSLL desde 01/04/2026 (anterioridade nonagesimal, art. 195 par. 6 CF). CONTROVERSIA JUDICIAL ATIVA - ver aviso abaixo."
   ],
   "avisos": [
     "Aliquota de referencia IBS+CBS ainda nao fixada em resolucao do Senado - cenarios sao estimativas.",
+    "Nao existe aliquota de referencia OFICIAL de CBS/IBS para 2027 em diante: a RFB retirou do banco da Calculadora (migracao V0053, 28/08/2026) os valores que havia carregado, por nao estarem definidos em lei. Nenhum cenario deste arquivo deve ser apresentado como 'oficial'.",
     "Percentuais de reparticao do DAS sao os da faixa efetiva; conferir contra LC 123 antes de uso em cliente real.",
     "Majoracao de 10% na presuncao do Lucro Presumido (LC 224/2025): ha controversia judicial ATIVA e NAO pacificada - a 1a Vara Federal de Resende/RJ concedeu liminar em janeiro/2026 suspendendo a exigibilidade da majoracao para o autor daquela acao (fundamento: Lucro Presumido nao e beneficio fiscal; majoracao tributaria 'renda ficticia'). A liminar tem efeito apenas inter partes (nao vale para todos os contribuintes) e pode ser revertida ou mantida por instancias superiores - o simulador aplica a majoracao como regra vigente por padrao, mas o usuario deve avaliar caso a caso se o cliente tem decisao judicial propria."
   ],
 
   "cenarios_aliquota": {
-    "base":        { "total": 0.270, "cbs": 0.085,  "ibs": 0.185,  "fonte": "Referencia oficial embarcada na Calculadora de Tributos RFB, banco V0042 (2026-07-07): CBS 8,5% + IBS UF 16,0% + IBS municipal 2,5%" },
+    "base":        { "total": 0.270, "cbs": 0.085,  "ibs": 0.185,  "fonte": "ESTIMATIVA - ultimo valor carregado pela RFB no banco da Calculadora (V0042, 2026-07-07: CBS 8,5% + IBS UF 16,0% + IBS municipal 2,5%), RETIRADO pela propria RFB na migracao V0053 (2026-08-28) por nao estar definido em lei. Desde a V0053 nao ha aliquota de referencia oficial para 2027+." },
     "otimista":    { "total": 0.265, "cbs": 0.0834, "ibs": 0.1816 },
     "conservador": { "total": 0.275, "cbs": 0.0866, "ibs": 0.1884 },
     "pessimista":  { "total": 0.285, "cbs": 0.0897, "ibs": 0.1953 }
@@ -161,14 +163,36 @@
 
   "calculadora_oficial": {
     "habilitada": true,
-    "versao_instalada": "V0042 - 1.3.0",
+    "versao_instalada": "Release 15 - regime regular 1.6.0 / banco V0059 (2026-09-30); Simples Nacional release 0.0.6",
+    "fonte_codigo": {
+      "regime_regular": "https://github.com/ReceitaFederal/calculadora-rtc-regime-regular",
+      "simples_nacional": "https://github.com/ReceitaFederal/calculadora-rtc-simples-nacional"
+    },
     "base_url": "http://localhost:8080",
+    "base_url_simples": "http://localhost:8082",
     "endpoint_swagger": "/api/api-docs",
     "endpoint_status": "/api/versao/status",
     "endpoint_calculo": "/api/calculadora/regime-geral",
+    "endpoint_calculo_observabilidade": "/api/calculadora/observabilidade/regime-geral",
+    "endpoint_calculo_simples": "/api/calculadora/observabilidade/simples-nacional",
     "endpoint_dados_abertos": "/api/calculadora/dados-abertos",
+    "fracao_ibs_estadual_nominal": 0.8649,
+    "fracao_ibs_estadual_nominal_por_ano": { "2027": 0.5, "2028": 0.5 },
     "tolerancia_divergencia_pp": 0.005,
-    "nota": "Modulo offline da Calculadora de Tributos da Receita Federal (piloto-cbs.tributos.gov.br). Nao ha API publica online - baixar o pacote offline, executar localmente e rodar 'python3 motor/validacao_oficial.py --descobrir' para mapear o endpoint de calculo via Swagger embutido. Tratamento do Simples Nacional ainda em desenvolvimento na Calculadora (FAQ v1.4) - validacao oficial cobre o regime regular (Presumido/Real/Simples hibrido)."
+    "simples": {
+      "cativsn_por_anexo": { "I": "01", "III": "07", "IV": "14", "V": "09" },
+      "tpdoc_por_atividade": { "comercio": "55", "industria": "55", "servicos": "91" },
+      "cclasstrib_padrao": "000001",
+      "nota": "Codigos do catalogo oficial ATIVIDADE_SIMPLES_NACIONAL (NT 2026.005, migracao V0049): 01 revenda/venda de mercadorias (Anexo I), 07 servicos tributados exclusivamente pelo Anexo III, 09 servicos sujeitos ao Fator R (Anexo III ou V), 14 servicos do Anexo IV. Anexo II so tem codigo para industrializacao incentivada na ZFM (03/04) - fora da ZFM informar --cativsn. tpDoc: 55 NF-e, 91 NFS-e (whitelist TIPO_DFE_CALCULO_SIMPLES_NACIONAL). Confirmar o codigo do cliente com 'python3 motor/base_oficial.py atividades-simples'."
+    },
+    "nota": "Calculadora de Tributos da RFB e CODIGO ABERTO desde a Release 15 (out/2026): dois modulos REST locais (Java 21) - regime regular em :8080 e Simples Nacional em :8082 - instalados por calculadora-oficial/instalar-github.(ps1|sh). Contrato 1.6.0: dhFatoGerador (dataHoraEmissao obsoleto); a partir de 2027 o item EXIGE aliquotasNominais (as aliquotas de referencia pos-2026 foram retiradas do banco na V0053) e o resultado sai como CALCULO_SIMULADO - enviamos as aliquotas do cenario local, entao a validacao confere a CLASSIFICACAO (vinculo NCM/NBS x cClassTrib, reducoes, regras), nao a aliquota de referencia. fracao_ibs_estadual_nominal reparte o IBS do cenario entre UF e municipio so para montar o payload (16,0/18,5 do ultimo valor publicado) - a comparacao usa a soma; nos anos-teste 2027-2028 o IBS de 0,1% e 0,05% estadual + 0,05% municipal (LC 214; mesmo exemplo da documentacao oficial), dai fracao_ibs_estadual_nominal_por_ano. A calculadora do Simples nao calcula a aliquota efetiva (PGDAS-D; consulta via Receita Integra prevista na Release 16) - ela recebe pCBSSN/pIBSSN e valida a operacao e o valor destacado. O pacote zip/Docker antigo do portal piloto-cbs (V0042 - 1.3.0) esta superado."
+  },
+
+  "base_oficial": {
+    "repositorio": "https://github.com/ReceitaFederal/calculadora-rtc-regime-regular",
+    "versao_referencia": "V0059",
+    "data_referencia": "2026-09-30",
+    "nota": "Banco normativo oficial (SQLite) montado localmente por motor/base_oficial.py a partir dos scripts Flyway publicados pela RFB - sem Java/Docker. Fonte da classificacao item a item (NCM/NBS/LC 116 -> cClassTrib -> CST e % de reducao por tributo, anexo da LC 214, fundamentacao, indicadores de credito, tpRBSN do Simples) que alimenta mix_redutores do perfil. versao_referencia = versao do banco com que estes parametros foram conferidos; 'python3 motor/base_oficial.py novidades' avisa quando a RFB publica migracao nova (sinal de mudanca normativa a avaliar pelo agente atualizacao-normativa). Os percentuais de redutores_lc214 e regimes_especificos_detalhe conferem com o banco V0059: 200052 profissoes intelectuais -30%, 200029 saude -60%, 200028 educacao -60%, 200003 cesta basica -100%, 200027 locacao de imoveis -70%, 200047 bares e restaurantes -40%, 200049 transporte coletivo -40%."
   },
 
   "financeiro": {

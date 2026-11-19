@@ -61,6 +61,30 @@ if [ -n "$LATEST_TAG" ]; then
   fi
 fi
 
+# Banco normativo oficial da Receita (motor/base_oficial.py): a RFB publicou migração
+# nova no GitHub? Só checa se o banco já foi montado; nunca trava (timeout curto).
+PY="$(command -v python3 || command -v python || true)"
+if [ -n "$PY" ] && [ -f "$REPO_DIR/calculadora-oficial/base/meta.json" ]; then
+  NOV="$("$PY" - "$REPO_DIR" <<'EOF' 2>/dev/null
+import sys, threading
+sys.path.insert(0, sys.argv[1] + "/motor")
+res = {}
+def checar():
+    try:
+        import base_oficial
+        res["n"] = base_oficial.novidades()
+    except Exception:
+        pass
+t = threading.Thread(target=checar, daemon=True); t.start(); t.join(4)
+n = res.get("n")
+if n and n["novas_migracoes"]:
+    print("Banco oficial da Receita: local %s, GitHub ja em %s (%d migracao(oes) nova(s)) - rode 'python3 motor/base_oficial.py novidades' e avalie com o agente atualizacao-normativa."
+          % (n["versao_local"], n["versao_remota"], len(n["novas_migracoes"])))
+EOF
+)"
+  [ -n "$NOV" ] && STATUS_LINES+=("$NOV")
+fi
+
 if [ "${#STATUS_LINES[@]}" -gt 0 ]; then
   MSG="ATENCAO - possivel desatualizacao em relacao ao GitHub: "
   for line in "${STATUS_LINES[@]}"; do

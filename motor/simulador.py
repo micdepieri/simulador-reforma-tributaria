@@ -60,13 +60,11 @@ def simular(perfil, params, cenario):
             memoria_creditos[regime] = mem
 
     # indicadores estruturais (pontos 6 e 7 do escopo v2)
-    aliq_plena_2033 = sum(ibs_cbs.aliquotas_ano(2033, cenario, params)[:2])
-    detalhe = params.get("regimes_especificos_detalhe", {})
-    if perfil.get("regime_especifico") in detalhe:
-        reducao = detalhe[perfil["regime_especifico"]]["reducao"]
-    else:
-        reducao = params["redutores_lc214"][perfil["categoria_redutor"]]["reducao"]
-    credito_cliente_pleno = receita * perfil["mix_b2b"] * aliq_plena_2033 * (1 - reducao)
+    cbs_2033, ibs_2033, _ = ibs_cbs.aliquotas_ano(2033, cenario, params)
+    aliq_plena_2033 = cbs_2033 + ibs_2033
+    aliq_saida_2033 = ibs_cbs.aliquota_saida(cbs_2033, ibs_2033, perfil, params)
+    reducao = 1 - aliq_saida_2033 / aliq_plena_2033 if aliq_plena_2033 else 0.0
+    credito_cliente_pleno = receita * perfil["mix_b2b"] * aliq_saida_2033
 
     # Fase 2: split payment (sobre o débito IBS/CBS pleno de 2033) + teste do cliente
     debito_2033 = ibs_cbs.ibs_cbs_liquido(perfil, 2033, cenario, params)["debito"]
@@ -88,6 +86,8 @@ def simular(perfil, params, cenario):
         "credito_potencial_clientes_2033": round(credito_cliente_pleno, 2),
         "categoria_redutor": perfil["categoria_redutor"],
         "reducao_lc214": reducao,
+        "mix_redutores": perfil.get("mix_redutores") or [],
+        "classificacao_oficial": perfil.get("classificacao_oficial"),
         "regime_especifico": perfil["regime_especifico"],
         "sujeito_imposto_seletivo": perfil["sujeito_imposto_seletivo"],
     }
@@ -157,7 +157,20 @@ def gravar_resumo(perfil, params, cenario, matriz, indicadores, bases, caminho):
     ap("- Compras creditáveis/receita: **%.1f%%**" % (100 * indicadores["compras_creditaveis_sobre_receita"]))
     ap("- Mix B2B: **%.0f%%** — crédito potencial gerado aos clientes em 2033: R$ %s/ano"
        % (100 * indicadores["mix_b2b"], f"{indicadores['credito_potencial_clientes_2033']:,.0f}".replace(",", ".")))
-    ap("- Redutor LC 214 aplicado: %s (−%.0f%%)" % (indicadores["categoria_redutor"], 100 * indicadores["reducao_lc214"]))
+    if indicadores.get("mix_redutores"):
+        co = indicadores.get("classificacao_oficial") or {}
+        ap("- Redutor LC 214 aplicado: **mix por item (−%.1f%% equivalente)** — classificação pela base "
+           "oficial da Receita %s; receita fora do mix segue a categoria '%s':"
+           % (100 * indicadores["reducao_lc214"], co.get("versao_banco", "?"), indicadores["categoria_redutor"]))
+        for m in indicadores["mix_redutores"]:
+            ap("    - %.1f%% da receita → cClassTrib %s (CBS −%.0f%%, IBS −%.0f%%) — %s"
+               % (100 * m["participacao"], m["cclasstrib"], 100 * m["reducao_cbs"],
+                  100 * m["reducao_ibs"], m.get("descricao", "")))
+        if co.get("participacao_nao_modelada"):
+            ap("    - %.1f%% da receita em tratamento NÃO modelado (regime específico/Imposto Seletivo) — análise à parte"
+               % (100 * co["participacao_nao_modelada"]))
+    else:
+        ap("- Redutor LC 214 aplicado: %s (−%.0f%%)" % (indicadores["categoria_redutor"], 100 * indicadores["reducao_lc214"]))
     split = indicadores["split_payment_2033"]
     ap("")
     ap("## Split payment — impacto no capital de giro (regime pleno 2033)")

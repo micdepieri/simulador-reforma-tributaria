@@ -100,6 +100,11 @@ Ele roda `motor/classificador_documentos.py` (organiza os arquivos de
 `novos/` dentro de `documentos/dre`, `balanco_patrimonial`, `folha`, `pgdas`,
 `xmls/entrada`, `xmls/saida`) e monta `empresas/<slug>/perfil_fiscal.json`.
 
+Em seguida, delegue ao agente `classificacao-oficial`: ele classifica os NCMs/serviços
+pela base oficial da Receita (`motor/base_oficial.py`), decide com evidência os itens
+cuja redução depende do texto dos anexos da LC 214 e grava `mix_redutores` no perfil.
+As pendências que ele devolver (itens em dúvida) entram na checagem do passo 5.
+
 ### 5. Checagem de completude (não pule esta etapa)
 
 Depois que o perfil fiscal existir, audite ativamente antes de simular:
@@ -118,6 +123,11 @@ Depois que o perfil fiscal existir, audite ativamente antes de simular:
   folha desproporcional à receita, etc.) → aponte a divergência encontrada e
   pergunte a origem ANTES de seguir. Nunca decida por conta própria qual
   número está certo.
+- **Classificação oficial com pendências** (`classificacao_oficial.itens_pendentes`
+  ou `participacao_a_confirmar` relevante) → mostre ao usuário os itens e o que falta
+  para decidir (composição, destinação, registro Anvisa…); até a resposta, esses itens
+  ficam com tributação integral — diga isso. NCM não vigente na tabela oficial é achado
+  de conformidade: a nota seria rejeitada; recomende corrigir o cadastro.
 - **Falta algo essencial e não há como estimar com razoabilidade** → PARE,
   não simule com um placeholder arbitrário, e peça o documento que falta.
 

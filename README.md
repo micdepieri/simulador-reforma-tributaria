@@ -20,8 +20,10 @@ diretamente (ela roda o motor a partir do perfil). Ou manualmente:
 python3 motor/simulador.py exemplos/servicos_ti_teste.json base
 ```
 
-Cenários: `base` (27,0% — referência oficial RFB) · `otimista` (26,5%) ·
-`conservador` (27,5%) · `pessimista` (28,5%).
+Cenários: `base` (27,0%) · `otimista` (26,5%) · `conservador` (27,5%) ·
+`pessimista` (28,5%) — **todos estimativas**: não existe alíquota de referência
+oficial de CBS/IBS para 2027+ (a Receita retirou do banco da Calculadora, na migração
+V0053, os valores que havia carregado — o 27,0% é o último que ela chegou a publicar).
 Saídas em `saidas/<empresa>/`: matriz CSV (2026–2033 × regimes), resumo Markdown
 (documento de trabalho do contador) e o relatório editorial em HTML + PDF
 (a peça que vai ao cliente).
@@ -44,12 +46,16 @@ motor/simulador.py                  ← CLI: matriz comparativa + resumo
 motor/relatorio_html.py             ← relatório editorial A4 para o cliente (8 páginas)
 motor/exportar_pdf.py               ← HTML → PDF via Chrome/Edge headless (opcional)
 motor/conector_dominio.py           ← opcional: perfil fiscal a partir do Domínio ERP (Sybase)
+motor/base_oficial.py               ← banco normativo OFICIAL da Receita (SQLite, montado do GitHub): NCM/NBS/LC 116 → cClassTrib → redução
+motor/validacao_oficial.py          ← validação cruzada com as APIs oficiais (regime regular + Simples)
+calculadora-oficial/                ← instalação das APIs oficiais a partir do código aberto da Receita
 docs/conector-dominio.md            ← como configurar o conector do Domínio (MCP + DSN ODBC)
 exemplos/                           ← perfis fiscais (2 empresas fictícias de validação)
 empresas/                           ← empresas reais em análise (fora do git, ver empresas/README.md)
 .claude/skills/iniciar/              ← comando /iniciar — entrevista + orquestra todo o processo
 .claude/skills/simulador-reforma/   ← skill orquestradora da simulação
 .claude/agents/ingestao-documentos.md   ← classifica documentos e monta o perfil fiscal
+.claude/agents/classificacao-oficial.md ← classifica itens pela base oficial e grava mix_redutores no perfil
 .claude/agents/conector-dominio.md      ← monta o perfil puxando do Domínio ERP (opcional)
 .claude/agents/atualizacao-normativa.md ← agente que atualiza parâmetros por norma nova
 ```
@@ -99,9 +105,9 @@ reproduzíveis e auditáveis.
   regime no resumo Markdown, seção no relatório HTML e CSV próprio
   (`repasse_preco_<cenario>.csv`). Modelo a volume constante, sem elasticidade de
   demanda — repasse *necessário*, não previsão de aceitação de mercado.
-- **Fase 4 — concluída e TESTADA CONTRA A CALCULADORA OFICIAL REAL:** o módulo
-  offline da Receita (V0042 – 1.3.0) está instalado em `calculadora-oficial/`
-  e roda via Docker. Iniciar/parar:
+- **Fase 4 — concluída e TESTADA CONTRA A CALCULADORA OFICIAL REAL** (registro
+  histórico: na época, pacote offline do portal piloto, V0042 – 1.3.0, via Docker —
+  hoje substituído pelo código aberto, ver o item seguinte). Iniciar/parar o pacote antigo:
   ```bash
   ./calculadora-oficial/iniciar-macos.sh
   ```
@@ -115,8 +121,28 @@ reproduzíveis e auditáveis.
   classificação de redutor e até NCM defasado (a calculadora valida contra a
   TIPI vigente e retorna 404). A calculadora oficial **valida e abastece
   parâmetros; nunca calcula por dentro do motor**.
+- **Calculadora oficial em código aberto (Release 15 da Receita, nov/2026):**
+  - **Classificação item a item pela base oficial** (`motor/base_oficial.py`): monta em
+    SQLite puro, sem Java, o banco normativo que a própria Calculadora usa (scripts SQL
+    do GitHub da Receita) e classifica cada NCM / NBS / item da LC 116 em cClassTrib,
+    CST e % de redução de CBS e IBS. O resultado vira `mix_redutores` no perfil — a
+    redução de saída passa a ser a média ponderada pela receita de cada item, em vez de
+    uma categoria única para a empresa inteira. Reduções que a lei condiciona à
+    **descrição do produto** (texto dos anexos da LC 214) ficam "a confirmar" e são
+    decididas, com evidência, pelo agente `classificacao-oficial`.
+  - **Ingestão de XML** passa a extrair receita por NCM com descrições e a separar
+    compras de **fornecedores do Simples × regime normal** (CRT do emitente) — o
+    crédito sobre compras de optante do Simples é só a parcela destacada do DAS.
+  - **Validação** (`motor/validacao_oficial.py`) no contrato 1.6.0 (`dhFatoGerador`,
+    `aliquotasNominais` obrigatórias a partir de 2027) e novo modo `--simples`, que
+    confere na Calculadora do Simples o IBS/CBS destacado pelo optante (crédito do
+    cliente B2B).
+  - `python3 motor/base_oficial.py novidades` (e o hook de início de sessão) avisa
+    quando a Receita publica migração nova no banco — sinal de mudança normativa.
 - **Backlog (Fase 5):** regimes de alíquota própria (combustíveis, financeiro,
-  planos de saúde, ZFM), NFS-e na ingestão, dashboard interativo multi-cliente.
+  planos de saúde, ZFM), NFS-e na ingestão, dashboard interativo multi-cliente,
+  alíquota efetiva real do Simples via Receita Integra (prevista na Release 16 da
+  Calculadora).
 
 ## Versionamento
 
@@ -141,13 +167,13 @@ não mexer em parâmetro nenhum, e vice-versa.
 ## Configurando em outra máquina
 
 1. Clone o repositório e garanta Python 3.9+ (sem dependências externas).
-2. A Calculadora oficial NÃO vem no repositório (254 MB): baixe em
-   [piloto-cbs.tributos.gov.br](https://piloto-cbs.tributos.gov.br/) → Calculadora
-   Offline → "Baixar programa" (Docker), salve como `calculadora.zip` na raiz do
-   projeto e extraia para `calculadora-oficial/` (`unzip calculadora.zip -d calculadora-oficial`).
-3. Com Docker instalado, rode `./calculadora-oficial/iniciar-macos.sh`
-   (no Linux, use os scripts oficiais em `calculadora-oficial/linux/`).
-4. Confira o alinhamento: `python3 motor/validacao_oficial.py --dados-abertos`.
+2. Monte o banco oficial da Receita (uma vez; precisa de internet, ~15 MB):
+   `python3 motor/base_oficial.py montar`. É o que a classificação usa — sem Java.
+3. Opcional, para a validação cruzada com as APIs oficiais (Git + Java 21+):
+   `calculadora-oficial\instalar-github.ps1` e `calculadora-oficial\executar.ps1`
+   (Linux/macOS: `instalar-github.sh` / `executar.sh`). Detalhes em
+   [calculadora-oficial/README.md](calculadora-oficial/README.md).
+4. Confira: `python3 motor/validacao_oficial.py --dados-abertos`.
 
 **LGPD:** a pasta `saidas/` e perfis de clientes reais (`exemplos/cliente_*.json`)
 estão no `.gitignore` e nunca sobem ao repositório.

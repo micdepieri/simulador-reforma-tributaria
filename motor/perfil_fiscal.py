@@ -26,7 +26,13 @@ PADROES = {
     "despesas_operacionais_anual": 0.0,
     "compras_creditaveis_anual": 0.0,   # entradas que gerariam crédito IBS/CBS (e PIS/COFINS no Real)
     "mix_b2b": 0.5,                 # fração da receita vendida a PJ (crédito importa)
-    "categoria_redutor": "padrao",  # chave de redutores_lc214
+    "categoria_redutor": "padrao",  # chave de redutores_lc214 (vale para a receita fora do mix_redutores)
+    # Classificação item a item pela base oficial da Receita (motor/base_oficial.py classificar):
+    # [{"cclasstrib", "descricao", "reducao_cbs", "reducao_ibs", "participacao", "fonte"}, ...]
+    # participacao = fração da receita; soma <= 1. Vazio = usa só categoria_redutor.
+    "mix_redutores": [],
+    "classificacao_oficial": None,  # carimbo da classificação: {versao_banco, data_referencia, participacao_nao_modelada}
+    "qualificacoes_fornecedor": [], # atores oficiais que a EMPRESA atende (ex.: "conselho profissional") — habilita reduções do art. 127 etc.
     "regime_especifico": None,      # chave de regimes_especificos_lc214, se houver
     "sujeito_imposto_seletivo": False,
     # carga EFETIVA atual (ponto 3 do escopo: benefícios fiscais → usar o efetivo pago)
@@ -65,7 +71,22 @@ def carregar_perfil(caminho):
                          % perfil["atividade"])
     if perfil["regime_atual"] == "simples" and not perfil["anexo_simples"]:
         raise ValueError("anexo_simples é obrigatório quando regime_atual = simples")
+    _validar_mix(perfil.get("mix_redutores") or [])
     return perfil
+
+
+def _validar_mix(mix):
+    soma = 0.0
+    for m in mix:
+        for campo in ("cclasstrib", "reducao_cbs", "reducao_ibs", "participacao"):
+            if campo not in m:
+                raise ValueError("mix_redutores: item sem '%s' (%r)" % (campo, m))
+        for campo in ("reducao_cbs", "reducao_ibs", "participacao"):
+            if not 0.0 <= float(m[campo]) <= 1.0:
+                raise ValueError("mix_redutores: %s fora de [0, 1] no cClassTrib %s" % (campo, m["cclasstrib"]))
+        soma += float(m["participacao"])
+    if soma > 1.0001:
+        raise ValueError("mix_redutores: participações somam %.4f (> 1)" % soma)
 
 
 def carregar_parametros(caminho=None):

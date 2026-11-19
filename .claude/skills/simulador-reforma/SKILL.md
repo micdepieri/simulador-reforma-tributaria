@@ -14,9 +14,16 @@ description: Simula o impacto da Reforma Tributária (EC 132/2023 + LC 214/2025)
    folha anual, compras creditáveis, mix B2B, alíquotas EFETIVAS de ICMS/ISS pagas hoje.
    **LGPD:** folha entra apenas como total anual — nunca dados nominais.
 
-2. **Classificação LC 214.** Determine `categoria_redutor` (padrao | profissoes_regulamentadas
-   | reducao_60 | cesta_basica) pelo CNAE/atividade, e sinalize `regime_especifico` e
-   `sujeito_imposto_seletivo` quando aplicável (listas em `parametros/parametros_reforma.json`).
+2. **Classificação LC 214 — pela base oficial da Receita.** Quando houver itens
+   identificáveis (XMLs de saída, catálogo de produtos/serviços), delegue ao agente
+   `classificacao-oficial`: ele usa `motor/base_oficial.py` (banco normativo da
+   Calculadora de Tributos, montado localmente a partir do GitHub da Receita) e grava no
+   perfil o `mix_redutores` item a item, com a versão do banco. Reduções que dependem do
+   texto de um anexo da LC 214 só entram no mix depois de conferidas — até lá, integral.
+   Sem itens, determine `categoria_redutor` (padrao | profissoes_regulamentadas |
+   reducao_60 | cesta_basica) pelo CNAE/atividade. Em ambos os casos sinalize
+   `regime_especifico` e `sujeito_imposto_seletivo` (listas em
+   `parametros/parametros_reforma.json`).
 
 3. **Simulação.** Salve o perfil em `exemplos/` (ou pasta do cliente) e rode:
    ```
@@ -26,30 +33,33 @@ description: Simula o impacto da Reforma Tributária (EC 132/2023 + LC 214/2025)
    ```
    Saídas em `saidas/<empresa>/`: matriz CSV + resumo Markdown.
 
-4. **Validação oficial (opcional, recomendada quando o módulo estiver instalado).**
-   Se o módulo offline da Calculadora de Tributos da Receita estiver rodando
-   localmente (`calculadora_oficial.habilitada: true` nos parâmetros), monte um
-   `itens.json` com os NCMs/NBS principais do cliente (a partir de
-   `saidas/resumo_xmls.json`) e rode:
+4. **Validação oficial (opcional, recomendada quando as APIs estiverem no ar).**
+   A Calculadora de Tributos é código aberto (Release 15): instale com
+   `calculadora-oficial/instalar-github.ps1` (ou `.sh`) e suba com `executar.ps1`
+   (regime regular em :8080, Simples em :8082). Então:
    ```
    python3 motor/validacao_oficial.py <perfil.json> --itens <itens.json>
+   python3 motor/validacao_oficial.py <perfil.json> --simples        # optantes do Simples
    ```
-   Divergências entre o motor e a calculadora oficial indicam erro de
-   classificação de `categoria_redutor` — corrija o perfil ANTES de entregar.
-   Comandos auxiliares: `--dados-abertos` (alíquotas de referência oficiais do
-   banco embarcado, para conferir os cenários locais) e `--descobrir` (lista os
-   ~40 endpoints da API local, incluindo consultas de cClassTrib, NCM/NBS
-   aplicável e NFS-e). O módulo sobe com `./calculadora-oficial/iniciar-macos.sh`.
-   Se o módulo não estiver instalado, siga sem esta etapa (nunca bloqueia) e
-   registre no relatório que a classificação de redutores não foi validada
-   contra a fonte oficial. Ressalva: Simples Nacional ainda em desenvolvimento
-   na Calculadora — validação vale para o regime regular.
+   Itens sem `cst`/`cclasstrib` são classificados pela base oficial antes do envio.
+   A partir de 2027 a API exige `aliquotasNominais` — enviamos as do cenário local,
+   então a validação confere a CLASSIFICAÇÃO (rejeição REG-011, redução aplicada),
+   não a alíquota. Item rejeitado ou divergente = corrija o perfil ANTES de entregar.
+   No modo `--simples`, confere o IBS/CBS destacado na nota do optante (o crédito do
+   cliente B2B) com os percentuais que o motor estima — a alíquota efetiva em si é do
+   PGDAS-D e a Calculadora não a calcula.
+   `--dados-abertos` lista as alíquotas de referência oficiais (funciona sem a API,
+   pelo banco local): desde a V0053 **não existe alíquota oficial para 2027+**.
+   Se as APIs não estiverem no ar, siga sem esta etapa (nunca bloqueia) e registre
+   no relatório que a validação contra a API oficial não foi feita.
 
 5. **Entrega.** Apresente: melhor regime por ano, curva da carga na transição,
    indicadores estruturais (folha/receita, crédito B2B), o **repasse de preço
    necessário** por ano/regime (`motor/precificacao.py` — ver seção própria no
    resumo e no relatório HTML) e SEMPRE as ressalvas (alíquota pendente de
-   fixação, versão dos parâmetros usada, repasse é modelo a volume constante sem
+   fixação — nenhum cenário é "oficial": a Receita retirou as alíquotas pós-2026 do
+   banco da Calculadora —, versão dos parâmetros e do banco oficial usadas, itens
+   com redução ainda a confirmar, repasse é modelo a volume constante sem
    elasticidade de demanda, análise final é do contador CRC). Inclua as seções
    qualitativas: contratos vigentes (cláusula de revisão tributária), checklist de
    prontidão operacional, cashback/B2C se varejo.

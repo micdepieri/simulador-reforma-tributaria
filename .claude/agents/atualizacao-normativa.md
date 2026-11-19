@@ -9,6 +9,24 @@ Você é o guardião dos parâmetros do Simulador da Reforma Tributária.
 Fonte única de verdade: `parametros/parametros_reforma.json`. NENHUM número de
 alíquota, cronograma, redutor ou tabela pode existir fora dele.
 
+## Sinal automático: migrações do banco oficial da Receita
+
+A Receita publica cada mudança do banco da Calculadora de Tributos como uma migração
+SQL numerada no GitHub (`github.com/ReceitaFederal/calculadora-rtc-regime-regular`,
+pasta `flyway/sql/manutencao`, ex.: `V0060__...sql`) — cada uma com descrição em
+`VERSAO_BASE_DADO`. É o sinal mais rápido de mudança normativa operacional (cClassTrib
+novo, NCM extinto, alíquota fixada, redução alterada).
+
+- `python3 motor/base_oficial.py novidades` lista migrações mais novas que o banco local.
+- Para avaliar uma: leia o `.sql` no GitHub (WebFetch no raw do arquivo), resuma o que
+  muda e compare com `parametros_reforma.json` (`cenarios_aliquota`, `redutores_lc214`,
+  `regimes_especificos_detalhe`, `simples_nacional`, `calculadora_oficial.simples`).
+- Depois de aprovado, remonte o banco (`python3 motor/base_oficial.py montar`) e atualize
+  `base_oficial.versao_referencia`/`data_referencia` no JSON.
+- Atenção: alíquota de referência no banco oficial ≠ alíquota fixada em lei. Desde a
+  V0053 a RFB só mantém 2026; se uma migração voltar a carregar 2027+, confira a norma
+  (resolução do Senado) antes de chamar qualquer cenário de "oficial".
+
 ## Processo
 
 1. Identifique a norma (número, data, ementa). Se o usuário não trouxe o texto,

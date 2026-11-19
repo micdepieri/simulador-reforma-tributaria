@@ -30,23 +30,53 @@ def aliquotas_ano(ano, cenario, params):
     return cbs, ibs, bool(c.get("teste_compensavel_pis_cofins", False))
 
 
+def reducoes_saida(perfil, params):
+    """(redução_CBS, redução_IBS) da receita de saída, como fração (0.6 = −60%).
+
+    Prioridade:
+    1. regime_especifico com redução própria (regimes_especificos_detalhe);
+    2. mix_redutores — classificação item a item pela base oficial da Receita
+       (motor/base_oficial.py): média ponderada pela participação na receita; a
+       fração não coberta pelo mix segue a categoria_redutor;
+    3. categoria_redutor única do perfil (comportamento original).
+    CBS e IBS podem divergir (ex.: cClassTrib 200025 — CBS −100%, IBS −60%).
+    """
+    detalhe = params.get("regimes_especificos_detalhe", {})
+    if perfil.get("regime_especifico") in detalhe:
+        r = detalhe[perfil["regime_especifico"]]["reducao"]
+        return r, r
+    base = params["redutores_lc214"][perfil["categoria_redutor"]]["reducao"]
+    mix = perfil.get("mix_redutores") or []
+    if not mix:
+        return base, base
+    coberto = sum(m["participacao"] for m in mix)
+    resto = max(0.0, 1.0 - coberto)
+    red_cbs = sum(m["participacao"] * m["reducao_cbs"] for m in mix) + resto * base
+    red_ibs = sum(m["participacao"] * m["reducao_ibs"] for m in mix) + resto * base
+    return red_cbs, red_ibs
+
+
+def aliquota_saida(cbs, ibs, perfil, params):
+    """Alíquota efetiva de saída (CBS + IBS) depois dos redutores."""
+    red_cbs, red_ibs = reducoes_saida(perfil, params)
+    return cbs * (1.0 - red_cbs) + ibs * (1.0 - red_ibs)
+
+
 def ibs_cbs_liquido(perfil, ano, cenario, params):
     """Débito − crédito de IBS/CBS do ano, com redutor da LC 214 na saída."""
     cbs, ibs, compensavel = aliquotas_ano(ano, cenario, params)
     aliq_plena = cbs + ibs
-    # regime específico com redução própria (LC 214) prevalece sobre a categoria geral
-    detalhe = params.get("regimes_especificos_detalhe", {})
-    if perfil.get("regime_especifico") in detalhe:
-        reducao = detalhe[perfil["regime_especifico"]]["reducao"]
-    else:
-        reducao = params["redutores_lc214"][perfil["categoria_redutor"]]["reducao"]
-    aliq_saida = aliq_plena * (1.0 - reducao)
+    red_cbs, red_ibs = reducoes_saida(perfil, params)
+    aliq_saida = cbs * (1.0 - red_cbs) + ibs * (1.0 - red_ibs)
+    # redução equivalente única (para exibição); idêntica à categoria quando não há mix
+    reducao = 1.0 - aliq_saida / aliq_plena if aliq_plena else red_cbs
     debito = perfil["receita_bruta_anual"] * aliq_saida
     credito = perfil["compras_creditaveis_anual"] * aliq_plena
     liquido = max(0.0, debito - credito)
     return {
         "aliq_cbs": cbs, "aliq_ibs": ibs, "aliq_plena": aliq_plena,
-        "reducao_lc214": reducao, "aliq_saida": aliq_saida,
+        "reducao_lc214": reducao, "reducao_cbs": red_cbs, "reducao_ibs": red_ibs,
+        "aliq_saida": aliq_saida,
         "debito": round(debito, 2), "credito": round(credito, 2),
         "liquido": round(liquido, 2), "compensavel_teste": compensavel,
     }
@@ -79,6 +109,26 @@ def carga_ano_presumido_real(carga_atual, perfil, ano, cenario, params):
         "total": round(total, 2),
         "memoria_ibs_cbs": novo,
     }
+
+
+def aliquotas_simples_ibs_cbs(carga_simples_atual, ano, params):
+    """(pCBSSN, pIBSSN) do Simples CHEIO no ano, como fração da receita.
+
+    Mesma premissa do motor: dentro do DAS, a parcela de PIS/COFINS (+IPI) vira CBS e a
+    de ICMS/ISS vira IBS na proporção já substituída pelo cronograma da transição. É o
+    percentual que a nota do optante destaca (pCBSSN/pIBSSN da NT 2026.005) e, portanto,
+    o crédito que o adquirente toma. Na prática virá do PGDAS-D (Receita Integra,
+    Release 16); até lá, é a estimativa do motor — validável na Calculadora do Simples.
+    """
+    c = params["cronograma_transicao"][str(ano)]
+    mem = carga_simples_atual["memoria"]
+    rep = mem.get("reparticao_consumo_faixa") or \
+        params["simples_nacional"]["anexos"][mem["anexo_aplicado"]]["reparticao_consumo"]
+    aliq = mem["aliquota_efetiva"]
+    frac_pc = rep.get("pis_cofins", 0.0) + rep.get("ipi", 0.0)
+    frac_ii = rep.get("icms_iss", 0.0)
+    return (aliq * frac_pc * (1.0 - c["pis_cofins_vigente"]),
+            aliq * frac_ii * (1.0 - c["icms_iss_vigente"]))
 
 
 def carga_ano_simples(carga_simples_atual, perfil, ano, cenario, params, hibrido):

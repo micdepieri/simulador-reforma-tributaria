@@ -18,11 +18,10 @@ import ibs_cbs
 
 def teste_cliente_b2b(perfil, carga_simples_atual, cenario, params, ano=2033):
     cbs, ibs, _ = ibs_cbs.aliquotas_ano(ano, cenario, params)
-    aliq_plena = cbs + ibs
-    reducao = params["redutores_lc214"][perfil["categoria_redutor"]]["reducao"]
     receita_b2b = perfil["receita_bruta_anual"] * perfil["mix_b2b"]
 
-    credito_hibrido = receita_b2b * aliq_plena * (1.0 - reducao)
+    # mesma redução de saída do motor (regime específico > mix por item > categoria)
+    credito_hibrido = receita_b2b * ibs_cbs.aliquota_saida(cbs, ibs, perfil, params)
     credito_cheio = 0.0
     if carga_simples_atual and "erro" not in carga_simples_atual:
         frac = carga_simples_atual["memoria"]["fracao_das_tributos_consumo"]
